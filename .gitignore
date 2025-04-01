@@ -1,5 +1,6 @@
 # Ignore all .exe files in CP_template
 CP_template/*.exe
+CP_template/.cph
 
 # Ignore all .cph files in TLE_SHEET subdirectories
 TLE_SHEET/**/.cph
