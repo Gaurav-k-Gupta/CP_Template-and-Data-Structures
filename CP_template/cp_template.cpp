@@ -25,6 +25,43 @@ const ll INF = 1e9;
 
 
 
+class seg_tree{
+    private:
+    int n;
+    vll t;
+    vi a;
+
+    void buildHelper( int v , int tl , int tr ){
+        if (tl == tr) {
+            t[v] = ;
+        } else {
+            int tm = (tl + tr) / 2;
+            build(a, v*2, tl, tm);
+            build(a, v*2+1, tm+1, tr);
+            t[v] = combine(t[v*2], t[v*2+1]);
+        }
+    }
+
+    public:
+    seg_tree( int n , vi &a ){
+        t.resize( 4*n );
+        this->n = n;
+        this->a = a;
+    }
+
+    void build(){
+        buildHelper( 0 , n-1);
+    }    
+};
+
+
+
+
+
+
+
+
+
 
 vector<bool> is_prime( ll N ){
     vector<bool> isPrime( N+1 , true );
