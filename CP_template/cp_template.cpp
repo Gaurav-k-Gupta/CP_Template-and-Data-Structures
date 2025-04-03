@@ -25,15 +25,17 @@ const ll INF = 1e9;
 
 
 
+// Right now, this segment tree is for quering max element in a range, point update ( replace ) , range update ( addend ) , do some little changes according to the queries or updates you want and then use it.
 class seg_tree{
     private:
 
     int n;
     vll t;
+    vll lazy;
 
 
     ll combine( ll a , ll b ){
-        return a + b;
+        return max(a,b);
     }
 
     void buildHelper( int v , int tl , int tr , vi & a){
@@ -46,6 +48,16 @@ class seg_tree{
             buildHelper( v*2 + 1 , tm+1 , tr , a );
             t[v] = combine(t[v*2], t[v*2+1]);
         }
+    }
+
+    void push(int v){
+        t[v*2] += lazy[v];
+        lazy[v*2] += lazy[v];
+
+        t[v*2+1] += lazy[v];
+        lazy[v*2+1] += lazy[v];
+
+        lazy[v] = 0;
     }
 
     void pointUpdateHelper( int v , int tl , int tr , int pos , int val ){
@@ -61,11 +73,26 @@ class seg_tree{
         }
     }
 
+    void rangeUpdateHelper( int v , int tl , int tr , int l , int r , int addend ){
+        if( l > r ) return;
+        if( tl == tr ){
+            t[v] += addend;
+        }
+        else{
+            push(v);
+            int tm = ( tl + tr )/2;
+            rangeUpdateHelper(v*2 , tl , tm , l , min(r , tm) , addend);
+            rangeUpdateHelper(v*2+1 , tm+1 , tr , max( tm+1 , l ) , r , addend);
+            t[v] = combine( t[v*2] , t[v*2 + 1]);
+        }
+    }
+
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return 0;
+        if( l > r ) return -INF;
         if( l == tl && r == tr ) return t[v];
+        push(v);
         int tm = ( tl + tr )/2;
-        return rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) + rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r);
+        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
@@ -73,11 +100,16 @@ class seg_tree{
     seg_tree( vi &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
+        lazy.resize( 4*n+1 , 0 );
         buildHelper( 1 , 0 , n-1 , a );
     }
 
     void pointUpdate( int pos , int val ){
         pointUpdateHelper( 1 , 0 , n-1 , pos , val );
+    }
+
+    void rangeUpdate( int l , int r , int val ){
+        rangeUpdateHelper( 1 , 0 , n-1 , l , r , val );
     }
 
     ll rangeQuery( int l , int r ){
@@ -145,12 +177,19 @@ ll Pow( ll x , ll exp ){
 
 
 void solve(){
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
 
-    cout<<t.rangeQuery(3 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 7)<<endl;
+    // segment tree testing
+    // vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
+    // seg_tree t(a);
+
+    // cout<<t.rangeQuery(5 , 6)<<endl;
+    // cout<<t.rangeQuery(0 , 7)<<endl;
+
+    // t.rangeUpdate(4 , 7 , 5);
+    // t.pointUpdate(0 , 45);
+
+    // cout<<t.rangeQuery(6 , 7)<<endl;
+    // cout<<t.rangeQuery(1 , 6)<<endl;
 
 }
 
