@@ -182,7 +182,9 @@ ll Pow( ll x , ll exp ){
 }
 
 
-
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
+}
 
 
 
