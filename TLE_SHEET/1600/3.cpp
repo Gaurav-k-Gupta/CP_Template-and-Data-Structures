@@ -3,11 +3,33 @@ using namespace std;
 
 #define ll long long
 
-int changeJ( int j , vector<int>& deleted ){
-    int n = deleted.size();
-    while( j < n && deleted[j] ) j++;
-    return j;
+void update( ll & i , stack<ll>& stk , string& s , vector<ll>& vis){
+    // cout<<i<<endl;
+    ll n = vis.size();
+    if( i == n ){
+        vis[stk.top()] = 1;
+        stk.pop();
+        return;
+    }
+
+    if( stk.empty() ){
+        stk.push(i);
+        i++;
+    }
+
+    char tp = s[stk.top()];
+    
+    while( i < n && s[i] >= tp ){
+        stk.push(i);
+        tp = s[i];
+        i++;
+    }
+
+    vis[stk.top()] = 1;
+    stk.pop();
+    return;
 }
+
 
 
 int main(){
@@ -21,52 +43,36 @@ int main(){
         string s;
         cin>>s;
 
-        int pos;
+        ll pos;
         cin>>pos;
 
-        int si = s.size();
-        int n = si;
-        vector<int> deleted( si , 0 );
-        int i = 0;
-        bool iterComplete = false;
+        ll n = s.size();
 
-        while( pos > si ){
+        vector<ll> vis(n , 0);
+        stack<ll> stk;
+        ll i = 0;
 
-            if( !iterComplete ){
-                int j = i + 1;
-                j = changeJ(j , deleted);
-                while( j < n && s[i] < s[j] ){
-                    i = j;
-                    j++;
-                    j = changeJ( j , deleted);
-                }
-                if( j == n ) iterComplete = true;
-            }
-            else{
-                while(i >= 0 && deleted[i]) i--;
-                // if( i == -1 ) i = changeJ( 0 , deleted );
-            }
-            
-            // cout<<i<<endl;
-            pos -= si;
-            si--;
-            deleted[i] = 1;
-
-            if( !iterComplete ){
-                while(i >= 0 && deleted[i]) i--;
-                if( i == -1 ) i = changeJ( 0 , deleted );
-            }
-            // cout<<i<<endl;
+        while( pos > n ){
+            update( i , stk , s , vis );
+            pos -= n;
+            n--;
         }
 
-        // cout<<pos<<" "<<si<<endl;
+        // for(auto it : vis) cout<<it<<" ";
+        // cout<<endl;
 
-        for(int i=0 ; i<n ; i++){
-            if( deleted[i] ) continue;
-            if( pos == 1 ){ cout<<s[i]; break; }
+        ll idx = 0;
+        while(pos){
+            if( vis[idx] ){
+                idx++;
+                continue;
+            }
             pos--;
+            if( !pos ) break;
+            idx++;
         }
 
-
+        cout<<s[idx];
     }
+    // cout<<endl;
 }
