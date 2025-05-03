@@ -45,7 +45,7 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return ( a & b );
     }
 
     void buildHelper( int v , int tl , int tr , vi & a){
@@ -98,11 +98,11 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return ~0;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
@@ -191,18 +191,61 @@ ll gcd( ll a , ll b ){
 void solve(){
 
     // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
+    // vi a = { 5 , 10 , 10 , 16 };
+    // seg_tree t(a);
+
+    // cout<<t.rangeQuery(2 , 3)<<endl;
+    // cout<<t.rangeQuery(1 , 3)<<endl;
+
+    // t.rangeUpdate(4 , 7 , 5);
+    // t.pointUpdate(0 , 45);
+
+    // cout<<t.rangeQuery(6 , 7)<<endl;
+    // cout<<t.rangeQuery(1 , 6)<<endl;
+
+
+    ll n;
+    cin>>n;
+
+    vi a(n);
+    for(int i = 0 ; i < n ; i++) cin>>a[i];
+
     seg_tree t(a);
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    ll q;
+    cin>>q;
+    while(q--){
+        int l , k;
+        cin>>l>>k;
+        // cout<<k<<endl;
+        l--;
+        int L = l;
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+        int r = n-1;
+        ll com = -1;
+        while( l <= r ){
+            int mid = ( l + r )/2;
+            ll res = t.rangeQuery(l , mid);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+            // cout<<l<<" "<<r<<endl;
+            // cout<<res<<" "<<com<<endl;
+            // cout<<l<<" "<<r<<" "<<mid<<" "<<res<<endl;
+            if( com != -1 ) res = res & com;
+            // cout<<res<<endl;
 
+            if( res >= k ){
+                com = res;
+                l = mid + 1;
+            }
+            else r = mid - 1;
+        }
+
+        if( r >= L ) cout<<r+1<<" ";
+        else cout<<"-1"<<" ";
+    }
+    
+    cout<<endl;
+    return;
 }
 
 int main(){

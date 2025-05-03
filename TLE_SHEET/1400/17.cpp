@@ -190,19 +190,40 @@ ll gcd( ll a , ll b ){
 
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    int n ;
+    cin>>n;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    vll u(n) , s(n);
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    for(int i = 0 ; i < n ; i++) cin>>u[i];
+    for(int i = 0 ; i < n ; i++) cin>>s[i];
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    vector<vll> adj(n+1);
+    for(int i = 0 ; i < n ; i++) adj[u[i]].push_back(s[i]);
 
+    vll ans(n+1 , 0);
+
+
+    for(int i = 1 ; i <= n ; i++){
+        ll si = adj[i].size();
+        if( si == 0 ) continue;
+
+        sort(adj[i].begin() , adj[i].end() , [&](int a , int b){ return a > b ;});
+        
+
+        for(int j = 1 ; j < si ; j++){
+            if( j ) adj[i][j] += adj[i][j-1];
+        }
+
+        for(int k = 1 ; k <= si ; k++){
+            ans[k] += ( adj[i][( (si - 1) - si % k )]);
+        }
+
+    }
+
+    for(int i = 1 ; i <= n ; i++) cout<<ans[i]<<" ";
+    cout<<endl;
+    
 }
 
 int main(){

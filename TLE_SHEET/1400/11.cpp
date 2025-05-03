@@ -1,20 +1,5 @@
-/*
-Author :- Gaurav Kumar
-Date - 30/03/2025
-*/
-
 #include<bits/stdc++.h>
-// #include <ext/pb_ds/assoc_container.hpp>
-// #include <ext/pb_ds/tree_policy.hpp>
 using namespace std;
-// using namespace __gnu_pbds;
-
-
-
-// template<class T> using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
-
-// template<class T> using ordered_multiset = tree<T, null_type, less_equal<T>, rb_tree_tag, tree_order_statistics_node_update>;
-
 
 #define ll long long
 #define pi pair<int,int>
@@ -35,7 +20,6 @@ const ll INF = 1e9;
 
 
 
-// Right now, this segment tree is for quering max element in a range, point update ( replace ) , range update ( addend ) , do some little changes according to the queries or updates you want and then use it.
 class seg_tree{
     private:
 
@@ -45,7 +29,7 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
     void buildHelper( int v , int tl , int tr , vi & a){
@@ -98,11 +82,11 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
         push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return min(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
@@ -127,6 +111,7 @@ class seg_tree{
     }
         
 };
+
 
 
 
@@ -160,58 +145,97 @@ vector<ll> primes( ll N ){
 
 
 
-ll modPow( ll x , ll exp ){
-    ll ans = 1;
-    while( exp > 0 ){
-        if( exp & 1 ) ans = ans * x % mod;
-        x = x*x % mod;
-        exp /= 2;
-    }
-    return ans;
-}
-
-
-ll Pow( ll x , ll exp ){
-    ll ans = 1;
-    while( exp > 0 ){
-        if( exp & 1 ) ans = ans * x;
-        x = x*x;
-        exp /= 2;
-    }
-    return ans;
-}
-
-
-ll gcd( ll a , ll b ){
-    return b ? gcd( b , a%b ) : a;
-}
 
 
 
-void solve(){
-
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
-
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
-
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
-
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
-
-}
 
 int main(){
     ios_base::sync_with_stdio(0);
-    cin.tie(0); cout.tie(0);
-
+    cin.tie(0);
+    cout.tie(0);
+    
     int t;
     cin>>t;
-    while( t-- ){
-        solve();
+
+    while(t--){
+        int n;
+        cin>>n;
+
+        vll a(n);
+
+        ll mod5  = 0 , mod10 = 0 , modn = 0;
+
+        ll val10 = -1 , val5 = -1 ; 
+        bool ans = true;
+
+
+        for(int i = 0 ; i < n ; i++){
+            cin>>a[i];
+
+
+            if( (a[i] % 10) == 5 ) a[i] += 5;
+
+
+            if( a[i] % 10 == 0 ){
+                mod10++;
+                if( val10 == -1 ) val10 = a[i];
+                else if( a[i] != val10 ) ans = false;
+            }
+            else modn++;
+
+        }
+
+
+        if( modn == 0 ){
+            if( ans ) cout<<"YES"<<endl;
+            else cout<<"NO"<<endl;
+            continue;
+        }
+
+        else if( modn && mod10 ){ cout<<"NO"<<endl; continue;}
+
+
+
+        ll E = -1 , O = -1;
+
+        for(int i = 0 ; i < n ; i++){
+
+            ll md = a[i] % 10;
+            if( md == 1 || md == 2 || md == 4 || md == 8 ){
+                ll val = (a[i] / 10) % 2;
+
+                if( E == -1 ){
+                    E = val;
+                    O = abs(E-1);
+                }
+                else{
+                    if( val != E ){
+                        ans = false;
+                        break;
+                    }
+                }
+            }
+
+            else{
+                ll val = (a[i] / 10) % 2;
+
+                if( E == -1 ){
+                    O = val;
+                    E = abs(O-1);
+                }
+                else{
+                    if( val != O ){
+                        ans = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        if( ans ) cout<<"YES"<<endl;
+        else cout<<"NO"<<endl;
+        
     }
+
 }

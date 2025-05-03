@@ -1,20 +1,5 @@
-/*
-Author :- Gaurav Kumar
-Date - 30/03/2025
-*/
-
 #include<bits/stdc++.h>
-// #include <ext/pb_ds/assoc_container.hpp>
-// #include <ext/pb_ds/tree_policy.hpp>
 using namespace std;
-// using namespace __gnu_pbds;
-
-
-
-// template<class T> using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
-
-// template<class T> using ordered_multiset = tree<T, null_type, less_equal<T>, rb_tree_tag, tree_order_statistics_node_update>;
-
 
 #define ll long long
 #define pi pair<int,int>
@@ -35,7 +20,6 @@ const ll INF = 1e9;
 
 
 
-// Right now, this segment tree is for quering max element in a range, point update ( replace ) , range update ( addend ) , do some little changes according to the queries or updates you want and then use it.
 class seg_tree{
     private:
 
@@ -45,7 +29,7 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
     void buildHelper( int v , int tl , int tr , vi & a){
@@ -98,11 +82,11 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
         push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return min(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
@@ -127,6 +111,7 @@ class seg_tree{
     }
         
 };
+
 
 
 
@@ -160,58 +145,57 @@ vector<ll> primes( ll N ){
 
 
 
-ll modPow( ll x , ll exp ){
-    ll ans = 1;
-    while( exp > 0 ){
-        if( exp & 1 ) ans = ans * x % mod;
-        x = x*x % mod;
-        exp /= 2;
-    }
-    return ans;
-}
-
-
-ll Pow( ll x , ll exp ){
-    ll ans = 1;
-    while( exp > 0 ){
-        if( exp & 1 ) ans = ans * x;
-        x = x*x;
-        exp /= 2;
-    }
-    return ans;
-}
-
-
-ll gcd( ll a , ll b ){
-    return b ? gcd( b , a%b ) : a;
-}
-
-
-
-void solve(){
-
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
-
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
-
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
-
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
-
-}
-
 int main(){
     ios_base::sync_with_stdio(0);
-    cin.tie(0); cout.tie(0);
-
+    cin.tie(0);
+    cout.tie(0);
+    
     int t;
     cin>>t;
-    while( t-- ){
-        solve();
+
+    while(t--){
+        int n , m;
+        cin>>n>>m;
+
+        vector<int> dp(n+1 , n+1); // just nxt unknown person
+
+        for(int i = 0 ; i < m ; i++){
+            int u , v;
+            cin>>u>>v;
+
+            if( u > v ) swap(u,v);
+
+            dp[u] = min( v , dp[u] );
+        }
+
+        seg_tree t(dp);
+        ll cnt = 0;
+
+        for(int i = 1 ; i <= n ; i++){
+            int l = i , r = n;
+
+            int miniL = INF;
+
+            while( l <= r ){
+                int mid = ( l + r )/2;
+
+                int mini = t.rangeQuery( l , mid );
+                mini = min(mini , miniL);
+
+                if( mini <= mid ) r = mid - 1;
+                else{
+                    miniL = mini;
+                    l = mid + 1;
+                }
+            }
+            
+            cnt += (ll)( r - i + 1);
+
+        }
+
+        cout<<cnt<<endl;
+
+
     }
+
 }
