@@ -186,8 +186,6 @@ ll gcd( ll a , ll b ){
     return b ? gcd( b , a%b ) : a;
 }
 
-
-
 ll factorial[500000] = {0};
 ll fact_inv[500000] = {0};
 
@@ -208,22 +206,25 @@ ll ncr(ll n , ll r){
 
 
 
-
-
 void solve(){
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vll a(n);
+    unordered_map<ll,ll> mp;
+    ll AND = 0;
+    for(int i = 0 ; i < n ; i++){
+        cin>>a[i];
+        mp[a[i]]++;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+        if( i ) AND = AND & a[i];
+        else AND = a[i];
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    ll end = mp[AND];
+    ll ans = (( end * ( end - 1 ) % mod) * fact( n - 2 ) % mod ) % mod; 
+    cout<<ans<<endl;
 
 }
 
