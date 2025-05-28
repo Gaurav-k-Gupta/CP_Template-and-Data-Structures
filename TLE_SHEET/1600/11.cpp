@@ -1,294 +1,139 @@
-/*
-Author :- Gaurav Kumar
-Date - 30/03/2025
-*/
-
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <chrono>
 // #include <ext/pb_ds/assoc_container.hpp>
 // #include <ext/pb_ds/tree_policy.hpp>
 using namespace std;
 // using namespace __gnu_pbds;
-
-
-
-// template<class T> using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
-
-// template<class T> using ordered_multiset = tree<T, null_type, less_equal<T>, rb_tree_tag, tree_order_statistics_node_update>;
-
-
-#define ll long long
-#define pi pair<int,int>
-#define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
-#define vi vector<int>
-#define vll vector<ll>
+// template <typename T> using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+// order_of_key (val): returns the no. of values less than val
+// find_by_order (k): returns the kth largest element.(0-based)
+template <typename T>
+ostream &operator<<(ostream &os, const vector<T> &vec)
+{
+    for (const auto &elem : vec)
+    {
+        os << elem << " ";
+    }
+    return os;
+}
+template <typename T>
+ostream &operator<<(ostream &os, const vector<vector<T>> &vec)
+{
+    for (const auto &row : vec)
+    {
+        os << " " << row << endl;
+    }
+    return os;
+}
+#define int long long
+#define endl "\n"
+#define mkp make_pair
 #define pb push_back
-#define loop(i,n,d) for(int i=0 ; i<n ; i += d)
-#define yes cout<<"YES"<<endl
-#define no cout<<"NO"<<endl
-#define all(a) (a).begin() , (a).end()
-#define prt(a) cout<<a<<endl
+#define ppb pop_back
+#define all(x) x.begin(), x.end()
+#define rall(x) x.rbegin(), x.rend()
+#define mod 1000000007
+#define no cout << "NO" << endl
+#define yes cout << "YES" << endl
 
-const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+/* بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ */
+/* وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ */
+/* فَإِنَّ مَعَ الْعُسْرِ يُسْرًا ۝ إِنَّ مَعَ الْعُسْرِ يُسْرًا */
+/* لا فَتى اِلاّ عَلِىّ، لا سَیفَ اِلاّ ذُوالفَقار */
+/* Always push harder than yesterday */
+/* Never feel demotivated */
+/* Hard work beats talent when talent doesn't work hard */
+/* Implementation is always better than preparation */
 
+class Solution
+{
+public:
+    void solve()
+    {
+        int n, k;
+        cin >> n >> k;
+        string a, b;
+        cin >> a >> b;
+        unordered_set<char> unique;
+        for (int i = 0; i < n; i++) unique.insert(a[i]);
 
-
-// Right now, this segment tree is for quering max element in a range, point update ( replace ) , range update ( addend ) , do some little changes according to the queries or updates you want and then use it.
-class seg_tree{
-    private:
-
-    int n;
-    vll t;
-    vll lazy;
-
-
-    ll combine( ll a , ll b ){
-        return max(a,b);
-    }
-
-    void buildHelper( int v , int tl , int tr , vi & a){
-        if (tl == tr) {
-            t[v] = a[tl];
-        }
-        else{
-            int tm = (tl + tr) / 2;
-            buildHelper(v*2 , tl , tm , a);
-            buildHelper( v*2 + 1 , tm+1 , tr , a );
-            t[v] = combine(t[v*2], t[v*2+1]);
-        }
-    }
-
-    void push(int v){
-        t[v*2] += lazy[v];
-        lazy[v*2] += lazy[v];
-
-        t[v*2+1] += lazy[v];
-        lazy[v*2+1] += lazy[v];
-
-        lazy[v] = 0;
-    }
-
-    void pointUpdateHelper( int v , int tl , int tr , int pos , int val ){
-        if( tl == tr ){
-            t[v] = val;
-        }
-        else{
-            int tm = ( tl + tr )/2;
-            if( pos <= tm ) pointUpdateHelper( v*2 , tl , tm , pos , val );
-            else pointUpdateHelper( v*2 + 1 , tm+1 , tr , pos , val );
-
-            t[v] = combine( t[v*2] , t[v*2 + 1]);
-        }
-    }
-
-    void rangeUpdateHelper( int v , int tl , int tr , int l , int r , int addend ){
-        if( l > r ) return;
-        if( tl == tr ){
-            t[v] += addend;
-        }
-        else{
-            push(v);
-            int tm = ( tl + tr )/2;
-            rangeUpdateHelper(v*2 , tl , tm , l , min(r , tm) , addend);
-            rangeUpdateHelper(v*2+1 , tm+1 , tr , max( tm+1 , l ) , r , addend);
-            t[v] = combine( t[v*2] , t[v*2 + 1]);
-        }
-    }
-
-    ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
-        if( l == tl && r == tr ) return t[v];
-        push(v);
-        int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
-    }
-
-    public:
-
-    seg_tree( vi &a ){
-        this->n = a.size();
-        t.resize( 4*n + 1 );
-        lazy.resize( 4*n+1 , 0 );
-        buildHelper( 1 , 0 , n-1 , a );
-    }
-
-    void pointUpdate( int pos , int val ){
-        pointUpdateHelper( 1 , 0 , n-1 , pos , val );
-    }
-
-    void rangeUpdate( int l , int r , int val ){
-        rangeUpdateHelper( 1 , 0 , n-1 , l , r , val );
-    }
-
-    ll rangeQuery( int l , int r ){
-        return rangeQueryHelper( 1 , 0 , n-1 , l , r );
-    }
-        
-};
-
-
-
-
-
-
-vector<bool> is_prime( ll N ){
-    vector<bool> isPrime( N+1 , true );
-    isPrime[0] = isPrime[1] = false;
-    for(int i=2 ; i*i <= N ; i++){
-        if( isPrime[i] ){
-            int j = i*i;
-            while( j <= N ){
-                isPrime[j] = false;
-                j += i;
+        vector<char> v(all(unique));
+        int sz = v.size();
+        int ans = INT_MIN;
+        k = min(k, sz);
+        vector<bool> alpha(26, 0);
+        for (int mask = 0; mask < (1 << sz); mask++)
+        {
+            for(int i = 0 ; i < 26 ; i++) alpha[i] = 0;
+            int cc = 0;
+            for (int j = 0; j < sz; j++)
+            {
+                if (mask & (1 << j))
+                {
+                    alpha[v[j] - 'a'] = true;
+                    cc++;
+                }
             }
-        }
-    }
-    return isPrime;
-}
-
-vector<ll> primes( ll N ){
-    vector<bool> isPrime = is_prime(N);
-    vector<ll> Primes;
-    for(ll i = 2 ; i <= N ; i++){
-        if( isPrime[i] ) Primes.push_back(i); 
-    }
-    return Primes;
-}
-
-
-
-
-ll modPow( ll x , ll exp ){
-    ll ans = 1;
-    while( exp > 0 ){
-        if( exp & 1 ) ans = ans * x % mod;
-        x = x*x % mod;
-        exp /= 2;
-    }
-    return ans;
-}
-
-
-ll Pow( ll x , ll exp ){
-    ll ans = 1;
-    while( exp > 0 ){
-        if( exp & 1 ) ans = ans * x;
-        x = x*x;
-        exp /= 2;
-    }
-    return ans;
-}
-
-
-ll gcd( ll a , ll b ){
-    return b ? gcd( b , a%b ) : a;
-}
-
-ll lcm(ll a , ll b){
-    ll g = gcd(a,b);
-    return (a*b)/g;
-}
-
-
-
-
-
-class disjoint_set{
-    private:
-    vector<int> par;
-    vector<int> rank;
-    vector<int> size;
-
-    public:
-    disjoint_set(int size){
-        par.resize(size+1);
-        rank.resize(size+1,0);
-        this->size.resize(size+1,1);
-        for(int i=0 ; i<=size ; i++) par[i] = i;
-    }
-    int Find(int X)
-    {
-       if(X==par[X]) return X;
-       return par[X] = Find(par[X]);
-    }
-
-    void Union(int x,int z)
-    {
-        int ulp_x = Find(x);
-        int ulp_z = Find(z);
-        if(ulp_x == ulp_z ) return;
-        if(rank[ulp_x] > rank[ulp_z]){
-            par[ulp_z] = ulp_x;
-            size[ulp_x] += size[ulp_z];
-        }
-        else if(rank[ulp_x] < rank[ulp_z]){
-            par[ulp_x] = ulp_z;
-            size[ulp_z] += size[ulp_x];
-        }
-        else{
-            par[ulp_x] = ulp_z;
-            rank[ulp_z]++;
-            size[ulp_z] += size[ulp_x];
-        }
-    }
-
-    int Size(int x){
-        int ulp_x = Find(x);
-        return this->size[ulp_x];
-    }
-};
-
-
-
-
-void solve(){
-    ll n;
-    cin>>n;
-
-    vector<vll> a(n , vll(2));
-
-    ll cnt = 0;
-    ll g = -1;
-    ll l = -1;
-
-    for(int i = 0 ; i < n ; i++){
-        cin>>a[i][0]>>a[i][1];
-
-        if( i ){
-            ll g_new = gcd( g , a[i][1]*a[i][0] );
-            ll l_new = lcm( l , a[i][1] );
+            if (cc > k) continue;
+            // string s = "";
+            int ans2 = 0LL;
+            int len = 0;
+            for (int i = 0; i < n; i++)
+            {
+                if (a[i] == b[i] or alpha[a[i] - 'a'] == true)
+                {
+                    len++;
+                }
+                else
+                {
+                    ans2 += len*(len+1) / 2;
+                    len = 0;
+                }
+            }
+            ans2 += len*(len+1) / 2;
+        //     int i = 0;
             
-            // cout<<g<<" "<<l<<endl;
-            // cout<<g_new<<" "<<l_new<<endl;
-
-            if( g_new % l_new ){
-                cnt++;
-                g = a[i][1]*a[i][0];
-                l = a[i][1];
-            }
-            else{
-                g = g_new;
-                l = l_new;
-            }
+        //     while (i < n)
+        //     {
+        //         if (s[i] == b[i])
+        //         {
+        //             int cnt = 0;
+        //             while (i < n && s[i] == b[i])
+        //             {
+        //                 cnt++;
+        //                 i++;
+        //             }
+        //             ans2 = ans2 + ((cnt) * (cnt + 1)) / 2LL;
+        //         }
+        //         else
+        //         {
+        //             i++;
+        //         }
+        //     }
+            ans = max(ans, ans2);
         }
-        else{
-            g = a[i][1] * a[i][0];
-            l = a[i][1];
-        }
+        cout << ans << endl;
     }
+};
 
-    cout<<cnt+1<<endl;
-}
-
-int main(){
-    ios_base::sync_with_stdio(0);
-    cin.tie(0); cout.tie(0);
-
-    int t;
-    cin>>t;
-    while(t--){
-        solve();
+int32_t main()
+{
+    // auto start = chrono::high_resolution_clock::now();
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    int test = 1;
+    cin >> test;
+    while (test--)
+    {
+        Solution A;
+        A.solve();
     }
+    // auto end = chrono::high_resolution_clock::now();
+    // chrono::duration<double, milli> elapsed = end - start;
+    // cout << "Execution time: " << elapsed.count() << " msec" << endl;
+    return 0;
 }
