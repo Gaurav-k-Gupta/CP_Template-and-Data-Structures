@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e14;
 
 
 
@@ -182,23 +182,14 @@ ll Pow( ll x , ll exp ){
 }
 
 
-ll gcd(ll a, ll b, ll& x, ll& y) {
-    x = 1, y = 0;
-    ll x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        ll q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
-    }
-    return a1;
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
 }
 
-ll lcm( ll a , ll b ){
-    ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+ll lcm(ll a , ll b){
+    ll g = gcd(a,b);
+    return (a*b)/g;
 }
-
 
 
 ll factorial[500000] = {0};
@@ -271,20 +262,75 @@ class disjoint_set{
 
 
 void solve(){
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vector<vll> adj( n );
+    for(ll i = 0 ; i < n-1 ; i++){
+        ll u , v;
+        cin>>u>>v;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+        u--;
+        v--;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    string s;
+    cin>>s;
 
+    ll cntLeaf = 0;
+    ll zero = 0 , one = 0;
+    ll rem = 0;
+    ll unim = 0;
+    for(int i = 1 ; i < n ; i++){
+        if( adj[i].size() == 1 ){
+            cntLeaf++;
+            if( s[i] == '0' ) zero++;
+            else if( s[i] == '1' ) one++;
+            else rem++; 
+        }
+        else if( s[i] == '?' ){
+            unim++;
+        }
+    }
+
+
+    if( s[0] != '?' ){
+        ll ans = 0;
+        if( s[0] == '1' ){
+            ans = zero;
+            ans += rem/2;
+            if( rem & 1 ) ans++;
+            cout<<ans<<endl;
+        }
+        else{
+            ans = one;
+            ans += rem/2;
+            if( rem & 1 ) ans++;
+            cout<<ans<<endl;
+        }
+    }
+    else{
+        ll ans = 0;
+        if( zero > one ){
+            ans = zero;
+            ans += rem/2;
+        }
+        else if( zero < one ){
+            ans = one;
+            ans += rem/2;
+        }
+        else{
+            ans = zero;
+            if( unim & 1 && rem & 1 ) ans++;
+            ans += rem/2; 
+        }
+
+        cout<<ans<<endl;
+    }
+    
 }
 
 int main(){
@@ -293,7 +339,7 @@ int main(){
 
     int t;
     cin>>t;
-    while( t-- ){
+    while(t--){
         solve();
     }
 }

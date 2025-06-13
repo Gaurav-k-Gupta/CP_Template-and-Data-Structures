@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e14;
 
 
 
@@ -182,23 +182,14 @@ ll Pow( ll x , ll exp ){
 }
 
 
-ll gcd(ll a, ll b, ll& x, ll& y) {
-    x = 1, y = 0;
-    ll x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        ll q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
-    }
-    return a1;
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
 }
 
-ll lcm( ll a , ll b ){
-    ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+ll lcm(ll a , ll b){
+    ll g = gcd(a,b);
+    return (a*b)/g;
 }
-
 
 
 ll factorial[500000] = {0};
@@ -268,22 +259,82 @@ class disjoint_set{
 };
 
 
+bool check;
+
+ll cntSteps( ll l , ll h , vll & a , unordered_map<ll,ll> & mp ){
+    if( l == h ){
+        if( !mp[a[l]] ) check = false;
+        return 0;
+    }
+
+    queue<ll> q;
+    for(ll i = l ; i <= h ; i++){
+        q.push(a[i]);
+    }
+
+    vll left;
+    ll mid = ( l + h )/2;
+    ll rem = h - mid;
+    ll steps = 0;
+
+    while( q.size() > rem ){
+        ll val = q.front();
+        ll idx = mp[val] - 1;
+
+        if( idx == -1 ){
+            check = false;
+            return 0;
+        }
+
+        q.pop();
+
+        if( idx <= mid ) left.pb(val);
+        else{
+            steps += q.size();
+            q.push(val);
+        }
+    }
+
+
+    for(ll i = l ; i <= h ; i++){
+        if( i <= mid ){
+            a[i] = left[i-l];
+        } 
+        else{
+            a[i] = q.front();
+            q.pop();
+        }
+    }
+
+    return steps + cntSteps( l , mid , a , mp ) + cntSteps( mid + 1 , h , a , mp );
+}
+
 
 
 void solve(){
+    ll n;
+    cin>>n;
+    
+    vll a(n) , b(n);
+    unordered_map<ll,ll> mp;
+    for(int i = 0 ; i < n ; i++) cin>>a[i];
+    for(int i = 0 ; i < n ; i++){
+        cin>>b[i];
+        mp[b[i]] = i+1;
+    }
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    check = true;
+    ll steps = cntSteps( 0 , n-1 , a , mp );
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    if( !check ){
+        no;
+        return;
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    if( steps % 2 == 0 ) yes;
+    else no;
+
 
 }
 
@@ -291,9 +342,10 @@ int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
+    
     int t;
     cin>>t;
-    while( t-- ){
+    while(t--){
         solve();
     }
 }

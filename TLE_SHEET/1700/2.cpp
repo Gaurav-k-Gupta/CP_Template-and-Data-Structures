@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e14;
 
 
 
@@ -182,23 +182,14 @@ ll Pow( ll x , ll exp ){
 }
 
 
-ll gcd(ll a, ll b, ll& x, ll& y) {
-    x = 1, y = 0;
-    ll x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        ll q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
-    }
-    return a1;
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
 }
 
-ll lcm( ll a , ll b ){
-    ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+ll lcm(ll a , ll b){
+    ll g = gcd(a,b);
+    return (a*b)/g;
 }
-
 
 
 ll factorial[500000] = {0};
@@ -268,23 +259,153 @@ class disjoint_set{
 };
 
 
-
-
 void solve(){
+    ll m , n;
+    cin>>m>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vector<vector<char>> a( m , vector<char>( n ));
+    priority_queue< pair<ll,vll> , vector<pair<ll,vll>> , greater<pair<ll,vll>> > pq;
+    // { dis , { i , j , dir , cnt }}
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    ll Ti = -1 , Tj = -1;
+    vector<vector<vector<vll>>> dis( m , vector<vector<vll>>( n , vector<vll>( 5 , vll( 4 , 1e18)) ));
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    for(int i = 0 ; i < m ; i++){
+        for(int j = 0 ; j < n ; j++){
+            cin>>a[i][j];
+            if( a[i][j] == 'S' ){
+                vll p2 = { i , j , 4 , 0 };
+                pq.push({0 , p2});
+                dis[i][j][4][0] = 0;
+            }
+            else if( a[i][j] == 'T' ){
+                Ti = i;
+                Tj = j;
+            }
+        }
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    // dir :- 0 L , 1 R , 2 U , 3 D , -1 S
 
+    
+    
+    while( !pq.empty() ){
+        ll d = pq.top().first;
+        vll info = pq.top().second;
+        ll i = info[0];
+        ll j = info[1];
+        ll dir = info[2];
+        ll cnt = info[3];
+
+        pq.pop();
+
+        // if( i == Ti && j == Tj ) break;
+
+        // Up 2
+        if( i > 0 && a[i-1][j] != '#' ){
+            ll di = d;
+            ll ci = cnt;
+            if( dir != 2 ){
+                di++;
+                ci = 1;
+            }
+            else if( cnt < 3 ){
+                di++;
+                ci++;
+            }
+            else{
+                di = -1;
+            }
+
+            if( di != -1 && dis[i-1][j][2][ci] > di ){
+                dis[i-1][j][2][ci] = di;
+                pq.push({ di , {i-1 , j , 2 , ci }});
+            }
+        }
+
+        // Down 3
+        if( i < m-1 && a[i+1][j] != '#' ){
+            ll di = d;
+            ll ci = cnt;
+            if( dir != 3 ){
+                di++;
+                ci = 1;
+            }
+            else if( cnt < 3 ){
+                di++;
+                ci++;
+            }
+            else{
+                di = -1;
+            }
+
+            if( di != -1 && dis[i+1][j][3][ci] > di ){
+                dis[i+1][j][3][ci] = di;
+                pq.push({ di , {i+1 , j , 3 , ci }});
+            }
+        }
+
+
+        // left 0
+        if( j > 0 && a[i][j-1] != '#' ){
+            ll di = d;
+            ll ci = cnt;
+            if( dir != 0 ){
+                di++;
+                ci = 1;
+            }
+            else if( cnt < 3 ){
+                di++;
+                ci++;
+            }
+            else{
+                di = -1;
+            }
+
+            if( di != -1 && dis[i][j-1][0][ci] > di ){
+                dis[i][j-1][0][ci] = di;
+                pq.push({ di , {i , j-1 , 0 , ci }});
+            }
+        }
+
+        // Right 1 
+        if( j < n-1 && a[i][j+1] != '#' ){
+            ll di = d;
+            ll ci = cnt;
+            if( dir != 1 ){
+                di++;
+                ci = 1;
+            }
+            else if( cnt < 3 ){
+                di++;
+                ci++;
+            }
+            else{
+                di = -1;
+            }
+
+            if( di != -1 && dis[i][j+1][1][ci] > di ){
+                dis[i][j+1][1][ci] = di;
+                pq.push({ di , {i , j+1 , 1 , ci }});
+            }
+        }
+
+
+    }
+
+
+    ll ans = 1e18;
+    for(ll i = 0 ; i < 5 ; i++){
+        for(ll j = 0 ; j < 4 ; j++){
+            ans = min( ans , dis[Ti][Tj][i][j] );
+        }
+    }
+
+
+    if( ans == 1e18 ) cout<<-1<<endl;
+    else cout<<ans<<endl;
+    
+        
 }
 
 int main(){
@@ -292,8 +413,9 @@ int main(){
     cin.tie(0); cout.tie(0);
 
     int t;
-    cin>>t;
-    while( t-- ){
+    // cin>>t;
+    t = 1;
+    while(t--){
         solve();
     }
 }

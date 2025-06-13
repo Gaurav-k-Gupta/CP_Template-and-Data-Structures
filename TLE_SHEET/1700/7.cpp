@@ -272,18 +272,66 @@ class disjoint_set{
 
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n , m , k;
+    cin>>n>>m>>k;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    vector<vll> a( n , vll( m ));
+    vector<string> type( n );
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    for(int i = 0 ; i < n ; i++){
+        for(int j = 0 ; j < m ; j++){
+            cin>>a[i][j];
+        }
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    for(int i = 0 ; i < n ; i++) cin>>type[i];
+
+    // 0 -> snowy caps , 1 -> without them
+    // go to all k*k sub grids and find tha val of no of 0's - no of 1's 
+    // also cal the overall diff between sum of heights of snowy caps (0) & the same of without snowy caps (1)
+
+
+    vector<vll> prefixSum( n , vll( m , 0 ));
+    ll diff = 0;
+    for(int i = 0 ; i < n ; i++){
+        ll sum = 0;
+        for(int j = 0 ; j < m ; j++){
+            if( type[i][j] == '1' ){
+                diff -= a[i][j];
+                sum++;
+            }
+            else diff += a[i][j];
+
+            prefixSum[i][j] = sum;
+        }
+    }
+
+    if( diff == 0 ){
+        yes;
+        return;
+    }
+
+    ll g = 0;
+    for(int j = k-1 ; j < m ; j++){
+        for(int i = 0 ; i <= n - k ; i++){
+            ll t = k;
+            ll idx = i;
+            ll s = 0;
+            while( t-- ){
+                s += ( prefixSum[idx][j] );
+                if( j - k >= 0 ) s-= prefixSum[idx][j-k];
+                idx++;
+            }
+            // ll zeros = k*k - s;
+            s = abs( k*k - s - s );
+            g = __gcd( g , s );
+        }
+    }
+
+    // cout<<diff<<" "<<g<<endl;
+    if( !g ){ no; return; }
+    if( diff % g == 0 ) yes;
+    else no;
 
 }
 

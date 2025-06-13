@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e14;
 
 
 
@@ -182,23 +182,14 @@ ll Pow( ll x , ll exp ){
 }
 
 
-ll gcd(ll a, ll b, ll& x, ll& y) {
-    x = 1, y = 0;
-    ll x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        ll q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
-    }
-    return a1;
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
 }
 
-ll lcm( ll a , ll b ){
-    ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+ll lcm(ll a , ll b){
+    ll g = gcd(a,b);
+    return (a*b)/g;
 }
-
 
 
 ll factorial[500000] = {0};
@@ -268,32 +259,36 @@ class disjoint_set{
 };
 
 
-
-
 void solve(){
+    ll n , m , k;
+    cin>>n>>m>>k;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll rowCnt = k/n;
+    if( k % n != 0 ) rowCnt++;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    // cout<<rowCnt<<endl;
+    ll low = 1 , high = rowCnt;
+    while( low <= high ){
+        ll mid = ( low + high )/2;
+        ll cnt = (m / (mid+1))*mid;
+        cnt += m % (mid+1);
+        if( cnt >= rowCnt ) high = mid - 1;
+        else low = mid + 1;
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
-
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
-
+    cout<<low<<endl;
 }
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
+    
+
+
     int t;
     cin>>t;
-    while( t-- ){
+    while(t--){
         solve();
     }
 }

@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e14;
 
 
 
@@ -182,23 +182,14 @@ ll Pow( ll x , ll exp ){
 }
 
 
-ll gcd(ll a, ll b, ll& x, ll& y) {
-    x = 1, y = 0;
-    ll x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        ll q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
-    }
-    return a1;
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
 }
 
-ll lcm( ll a , ll b ){
-    ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+ll lcm(ll a , ll b){
+    ll g = gcd(a,b);
+    return (a*b)/g;
 }
-
 
 
 ll factorial[500000] = {0};
@@ -268,23 +259,51 @@ class disjoint_set{
 };
 
 
+ll ht( ll node , ll par , ll eCnt , vector<vll>& adj , map<ll,ll> & mp ){
+
+    ll h = 0;
+    for(auto & it : adj[node]){
+        if( it == par ) continue;
+        h = max( h , ht(it , node , eCnt+1 , adj , mp ));
+    }
+    mp[eCnt]++;
+    mp[h + eCnt +1]--;
+    return h + 1;
+}
 
 
 void solve(){
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vector<vll> adj( n );
+    for(ll i = 0 ; i < n-1 ; i++){
+        ll u , v;
+        cin>>u>>v;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+        u--;
+        v--;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    map<ll,ll> mp;
+    ll h = ht( 0 , -1 , 0 , adj , mp );
 
+
+    ll maxi = 0;
+    ll sum = 0;
+    for(auto & it : mp){
+        sum += it.second;
+        maxi = max( maxi , sum );
+    }
+
+
+
+    cout<<n-maxi<<endl;
+    
+    
 }
 
 int main(){
@@ -293,7 +312,7 @@ int main(){
 
     int t;
     cin>>t;
-    while( t-- ){
+    while(t--){
         solve();
     }
 }
