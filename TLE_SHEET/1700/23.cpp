@@ -289,79 +289,47 @@ struct Fenwick {
 
 
 
-
-
-
 void solve(){
     ll n , m;
     cin>>n>>m;
-    
-    vll a(n);
-    vll dp( n , 0 );
 
-    ll tot = 0;
+    vector<vll> a( n , vll( m ));
 
     for(int i = 0 ; i < n ; i++){
-        cin>>a[i];
-        
-        if( !i ) dp[i] = 1;
-        else if( a[i] == a[i-1] ) dp[i] = dp[i-1] + 1;
-        else dp[i] = dp[i-1] + i + 1;
-
-        tot += dp[i];
+        for(int j = 0 ; j < m ; j++) cin>>a[i][j];
     }
 
-    // cout<<tot<<endl;
+    if( ( n + m - 1 ) & 1 ){
+        no;
+        return;
+    }
 
-    // seg_tree t(dp);
-
-    Fenwick f(n+1);
-
-    // cout<<t.rangeQuery(0 , n-1)<<endl;
-
-    while( m-- ){
-        ll i,x;
-        cin>>i>>x;
-
-        i--;
-        a[i] = x;
-
-        ll di = dp[i] + f.sum(i);
-
-        ll change = 0;
-        if( i ){
-            ll dim1 = dp[i-1] + f.sum(i-1);
-            if( a[i] == a[i-1] ){
-                change = ( dim1 + 1 ) - di;
-            }
-            else{
-                change = ( dim1 + i + 1 ) - di; 
-            }
-            // cout<<change<<" ";
-            di += change;
-            tot += change;
-            f.add(i , change);
-            f.add(i+1 , -change);
-        } 
-
-        if( i < n-1 ){
-            change = 0;
-            ll dip1 = dp[i+1] + f.sum(i+1);
-            if( a[i+1] == a[i] ){
-                change = ( di + 1 ) - dip1;
-            }
-            else{
-                change = ( di + i + 2 ) - dip1; 
-            }
-            // cout<<change<<endl;
-            // t.rangeUpdate(i+1 , n-1 , change);
-            f.add( i+1 , change );
-            f.add( n , -change );
-            tot += change * ( n - i - 1 );
+    vector<vll> dp1( n , vll( m , 1e9 ) );
+    dp1[0][0] = a[0][0];
+    
+    for(int i = 0 ; i < n ; i++){
+        for(int j = 0 ; j < m ; j++){
+            if( !i && !j ) continue;
+            ll up = i ? dp1[i-1][j] : 1e9;
+            ll left = j ? dp1[i][j-1] : 1e9;
+            dp1[i][j] = min( up , left ) + a[i][j];
         }
-
-        cout<<tot<<endl;
     }
+
+    vector<vll> dp2( n , vll( m , -1e9 ) );
+    dp2[0][0] = a[0][0];
+    
+    for(int i = 0 ; i < n ; i++){
+        for(int j = 0 ; j < m ; j++){
+            if( !i && !j ) continue;
+            ll up = i ? dp2[i-1][j] : -1e9;
+            ll left = j ? dp2[i][j-1] : -1e9;
+            dp2[i][j] = max( up , left ) + a[i][j];
+        }
+    }
+
+    if( dp1[n-1][m-1] <= 0 && dp2[n-1][m-1] >= 0 ) yes;
+    else no;
 }
 
 int main(){
@@ -370,8 +338,8 @@ int main(){
 
 
     int t;
-    // cin>>t;
-    t = 1;
+    cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

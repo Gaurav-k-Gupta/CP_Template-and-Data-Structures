@@ -295,72 +295,47 @@ struct Fenwick {
 void solve(){
     ll n , m;
     cin>>n>>m;
-    
-    vll a(n);
-    vll dp( n , 0 );
 
-    ll tot = 0;
+    vll a(m);
+    for(int i = 0 ; i < m ; i++) cin>>a[i];
 
-    for(int i = 0 ; i < n ; i++){
-        cin>>a[i];
-        
-        if( !i ) dp[i] = 1;
-        else if( a[i] == a[i-1] ) dp[i] = dp[i-1] + 1;
-        else dp[i] = dp[i-1] + i + 1;
+    ll K = log2l( m ) + 1;
+    ll MAXN = m;
 
-        tot += dp[i];
+    vector<vll> st( K , vll( MAXN ));
+
+    st[0] = a;
+
+    for(ll i = 1 ; i < K ; i++){
+        for(ll j = 0 ; j + ( 1 << i ) <= MAXN ; j++){
+            st[i][j] = max( st[i-1][j] , st[i-1][ j + ( 1 << (i-1) ) ] );
+        }
     }
 
-    // cout<<tot<<endl;
+    ll q;
+    cin>>q;
 
-    // seg_tree t(dp);
+    while( q-- ){
+        ll xs , ys , xf , yf , k;
+        cin>>xs>>ys>>xf>>yf>>k;
+        xs--; ys--; xf--; yf--;
 
-    Fenwick f(n+1);
+        ll L = min( ys , yf );
+        ll R = max( ys , yf );
+        ll i = log2(R-L+1);
+        ll maxi = max( st[i][L] , st[i][ R - ( 1 << i ) + 1 ] );
 
-    // cout<<t.rangeQuery(0 , n-1)<<endl;
+        // cout<<maxi<<endl;
 
-    while( m-- ){
-        ll i,x;
-        cin>>i>>x;
+        bool check = true;
+        if( (R - L) % k ) check = false;
+        if( abs(xs - xf) % k ) check = false;
 
-        i--;
-        a[i] = x;
+        xs++;
+        if( maxi >= xs && maxi + k - ( (maxi - xs) % k ) > n ) check = false;
 
-        ll di = dp[i] + f.sum(i);
-
-        ll change = 0;
-        if( i ){
-            ll dim1 = dp[i-1] + f.sum(i-1);
-            if( a[i] == a[i-1] ){
-                change = ( dim1 + 1 ) - di;
-            }
-            else{
-                change = ( dim1 + i + 1 ) - di; 
-            }
-            // cout<<change<<" ";
-            di += change;
-            tot += change;
-            f.add(i , change);
-            f.add(i+1 , -change);
-        } 
-
-        if( i < n-1 ){
-            change = 0;
-            ll dip1 = dp[i+1] + f.sum(i+1);
-            if( a[i+1] == a[i] ){
-                change = ( di + 1 ) - dip1;
-            }
-            else{
-                change = ( di + i + 2 ) - dip1; 
-            }
-            // cout<<change<<endl;
-            // t.rangeUpdate(i+1 , n-1 , change);
-            f.add( i+1 , change );
-            f.add( n , -change );
-            tot += change * ( n - i - 1 );
-        }
-
-        cout<<tot<<endl;
+        if( check ) yes;
+        else no;
     }
 }
 

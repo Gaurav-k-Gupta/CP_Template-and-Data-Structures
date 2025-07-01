@@ -289,79 +289,62 @@ struct Fenwick {
 
 
 
-
-
-
 void solve(){
-    ll n , m;
-    cin>>n>>m;
-    
-    vll a(n);
-    vll dp( n , 0 );
+    ll n;
+    cin>>n;
 
-    ll tot = 0;
+    vll a(n);
+    map<ll,vll> mp;
 
     for(int i = 0 ; i < n ; i++){
         cin>>a[i];
-        
-        if( !i ) dp[i] = 1;
-        else if( a[i] == a[i-1] ) dp[i] = dp[i-1] + 1;
-        else dp[i] = dp[i-1] + i + 1;
-
-        tot += dp[i];
+        mp[a[i]].pb( i + 1 );
     }
 
-    // cout<<tot<<endl;
+    ll fin_a = 0 , L = 1 , R = 1;
+    ll maxLen = 0;
 
-    // seg_tree t(dp);
+    for(auto & vec : mp){
+        
+        ll mLen = 0;
+        ll l = -1 , r = -1;
 
-    Fenwick f(n+1);
 
-    // cout<<t.rangeQuery(0 , n-1)<<endl;
+        ll prev = vec.second[0] - 1;
+        ll curr = 0;
+        ll c_l = prev+1 , c_r = prev+1;
 
-    while( m-- ){
-        ll i,x;
-        cin>>i>>x;
+        for(auto & x : vec.second){
+            ll neg = x - prev - 1;
+            if( neg ) curr -= neg;
 
-        i--;
-        a[i] = x;
-
-        ll di = dp[i] + f.sum(i);
-
-        ll change = 0;
-        if( i ){
-            ll dim1 = dp[i-1] + f.sum(i-1);
-            if( a[i] == a[i-1] ){
-                change = ( dim1 + 1 ) - di;
+            if( curr < 0 ){
+                c_l = c_r = x;
+                curr = 0;
             }
-            else{
-                change = ( dim1 + i + 1 ) - di; 
-            }
-            // cout<<change<<" ";
-            di += change;
-            tot += change;
-            f.add(i , change);
-            f.add(i+1 , -change);
-        } 
 
-        if( i < n-1 ){
-            change = 0;
-            ll dip1 = dp[i+1] + f.sum(i+1);
-            if( a[i+1] == a[i] ){
-                change = ( di + 1 ) - dip1;
+            curr++;
+            c_r = x;
+
+            if( curr > mLen ){
+                mLen = curr;
+                l = c_l;
+                r = c_r;
             }
-            else{
-                change = ( di + i + 2 ) - dip1; 
-            }
-            // cout<<change<<endl;
-            // t.rangeUpdate(i+1 , n-1 , change);
-            f.add( i+1 , change );
-            f.add( n , -change );
-            tot += change * ( n - i - 1 );
+
+            prev = x;
         }
 
-        cout<<tot<<endl;
+
+        if( mLen > maxLen ){
+            maxLen = mLen;
+            L = l;
+            R = r;
+            fin_a = vec.first;
+        }
     }
+
+    cout<<fin_a<<" "<<L<<" "<<R<<endl;
 }
 
 int main(){
@@ -370,8 +353,8 @@ int main(){
 
 
     int t;
-    // cin>>t;
-    t = 1;
+    cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }
