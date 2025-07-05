@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaurav Kumar - Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 10px;
+            line-height: 1.3;
+            font-size: 11px;
+        }
+        
+        .resume-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4a90e2;
+        }
+        
+        .name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+        
+        .title {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.75em;
+            color: #34495e;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .contact-item a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .section {
+            margin-bottom: 12px;
+        }
+        
+        .section-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #4a90e2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #4a90e2;
+        }
+        
+        .experience-item, .project-item, .education-item {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .experience-item:last-child, .project-item:last-child, .education-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .job-title, .project-title, .degree-title {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+        
+        .company-name, .project-tech, .institution-name {
+            font-weight: bold;
+            color: #4a90e2;
+            margin-bottom: 2px;
+            font-size: 0.85em;
+        }
+        
+        .date-location {
+            font-size: 0.75em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .description {
+            margin-left: 0;
+        }
+        
+        .description ul {
+            margin-left: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .description li {
+            margin-bottom: 2px;
+            color: #34495e;
+            font-size: 0.85em;
+        }
+        
+        .github-link {
+            margin-top: 5px;
+            font-size: 0.75em;
+        }
+        
+        .github-link a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+        
+        .github-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 5px;
+        }
+        
+        .skill-category {
+            margin-bottom: 5px;
+        }
+        
+        .skill-category-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 2px;
+            font-size: 0.85em;
+        }
+        
+        .skill-list {
+            color: #34495e;
+            line-height: 1.3;
+            font-size: 0.8em;
+        }
+        
+        .achievements-list {
+            margin-left: 15px;
+        }
+        
+        .achievements-list li {
+            margin-bottom: 4px;
+            color: #34495e;
+            font-size: 0.85em;
+        }
+        
+        @media (max-width: 768px) {
+            .contact-info {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .resume-container {
+                padding: 20px;
+            }
+            
+            .name {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <div class="header">
+            <h1 class="name">Gaurav Kumar</h1>
+            <p class="title">Full Stack Developer | BTech CSE | IIT Bhilai</p>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <span>📧</span>
+                    <a href="mailto:gauravgupta0954@gmail.com">gauravgupta0954@gmail.com</a>
+                </div>
+                <div class="contact-item">
+                    <span>📱</span>
+                    <span>+91 9153693102</span>
+                </div>
+                <div class="contact-item">
+                    <span>🔗</span>
+                    <a href="https://www.linkedin.com/in/gaurav-kumar-25554430b/">LinkedIn</a>
+                </div>
+                <div class="contact-item">
+                    <span>🐙</span>
+                    <a href="https://github.com/Gaurav-k-Gupta">GitHub</a>
+                </div>
+                <div class="contact-item">
+                    <span>🌐</span>
+                    <a href="http://www.gauravkr.xyz">Portfolio</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Education</h2>
+            <div class="education-item">
+                <div class="institution-name">Indian Institute of Technology, Bhilai</div>
+                <div class="degree-title">Bachelor of Technology - Computer Science and Engineering</div>
+                <div class="date-location">2023 - 2027 | CGPA: 8.61/10</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Work Experience</h2>
+            <div class="experience-item">
+                <div class="company-name">Basil Infotech</div>
+                <div class="job-title">Junior Development Intern</div>
+                <div class="date-location">May 2025 - August 2025</div>
+                <div class="description">
+                    <ul>
+                        <li>Developed responsive real estate web application using React.js, TypeScript, and Tailwind CSS, improving user engagement by 15%</li>
+                        <li>Architected RESTful APIs using Node.js and Express.js for seamless banking partners data flow</li>
+                        <li>Designed optimized MongoDB schemas, reducing data redundancy by 20%</li>
+                        <li>Deployed platform on AWS infrastructure achieving 99% uptime and enhanced scalability</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Projects</h2>
+            <div class="project-item">
+                <div class="project-title">Collabra AI</div>
+                <div class="project-tech">React.js, Tailwind CSS, Node.js, Express.js, WebSockets, Firestore</div>
+                <div class="date-location">2025</div>
+                <div class="description">
+                    <ul>
+                        <li>Developed AI-powered collaborative code editor using React.js and Tailwind CSS for streamlined workflow</li>
+                        <li>Implemented real-time chat using WebSockets and integrated Google Gemini Flash 2.5 for AI code generation</li>
+                        <li>Built scalable backend with Node.js, Express.js, JWT authentication, and role-based access control</li>
+                        <li>Utilized Firestore for codebase storage and web containers for project execution</li>
+                    </ul>
+                </div>
+                <div class="github-link">
+                    <a href="https://github.com/Gaurav-k-Gupta/CollabraAI">GitHub Repository</a>
+                </div>
+            </div>
+            
+            <div class="project-item">
+                <div class="project-title">HostelPro - Hostel Management System</div>
+                <div class="project-tech">React.js, Node.js, Tailwind CSS, Stripe API</div>
+                <div class="date-location">2024</div>
+                <div class="description">
+                    <ul>
+                        <li>Developed comprehensive hostel management web app with room booking and availability tracking</li>
+                        <li>Implemented complaint management system and integrated Stripe payment gateway for transactions</li>
+                        <li>Built secure backend with authentication and responsive UI design</li>
+                    </ul>
+                </div>
+                <div class="github-link">
+                    <a href="https://github.com/OmAnand857/Hostel_Management">GitHub Repository</a>
+                </div>
+            </div>
+            
+            <div class="project-item">
+                <div class="project-title">Stress Management App</div>
+                <div class="project-tech">React Native, TypeScript, Llama-3.3-70B, Groq Cloud</div>
+                <div class="date-location">2024</div>
+                <div class="description">
+                    <ul>
+                        <li>Developed end-to-end stress management mobile app with self-assessment and personalized recommendations</li>
+                        <li>Integrated AI chat assistance using fine-tuned Llama-3.3-70B model and implemented therapy features</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <div class="skill-category-name">Programming Languages:</div>
+                    <div class="skill-list">C, C++, JavaScript, Python</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-category-name">Frameworks/Libraries:</div>
+                    <div class="skill-list">React.js, Node.js, Express.js, Next.js, React Native, Tailwind CSS, Socket.io</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-category-name">Databases:</div>
+                    <div class="skill-list">SQL, MongoDB, IndexedDB, Firebase, Redis, Vector DB</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-category-name">Data Science/ML:</div>
+                    <div class="skill-list">NumPy, Pandas, Matplotlib, Scikit-learn</div>
+                </div>
+                <div class="skill-category">
+                    <div class="skill-category-name">GenAI/Agents:</div>
+                    <div class="skill-list">Groq AI, Gemini, Langflow, n8n</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Achievements and Certificates</h2>
+            <div class="description">
+                <ul class="achievements-list">
+                    <li>Expert (1652 rating) on Codeforces, 3 Star (1723 rating) on CodeChef, Knight (1850 rating) on LeetCode</li>
+                    <li>Solved 550+ problems on LeetCode, completed 100 Days ML Challenge</li>
+                    <li>3rd place at Trustathon organized by de.ci.phe.red labs, IIT Bhilai</li>
+                    <li>Top 50 at Apoorv CTF challenge by IIIT Kottayam</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
