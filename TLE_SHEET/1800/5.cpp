@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -286,59 +286,76 @@ struct Fenwick {
   }
 };
 
-int possibleWinners( vector<int> boost_a , vector<int> boost_b , vector<int> boost_c ){
-    int n = boost_a.size();
 
-    vector<int> pre_a(n) , suf_a(n) , pre_b(n) , suf_b(n);
-    vector<vector<int>> sorted_boost(n);
 
-    for(int i = 0 ; i < n ; i++){
-        vector<int> boost = { boost_a[i] , boost_b[i] , boost_c[i] };
-        sort(boost.begin() , boost.end());
 
-        sorted_boost[i] = boost;
+// ll minTime( ll node , ll prevCycle , vector<vector<pll>>& adj , vll & s , vector<vll>& dp ){
+//     ll n = adj.size();
+
+//     if( node == n-1 ) return 0;
+
+//     if( dp[node][prevCycle] != -1 ) return dp[node][prevCycle];
+
+//     cout<<node<<endl;
+
+//     ll mini = 1e12;
+//     for(auto & it : adj[node]){
+//         ll v = it.first;
+//         ll w = it.second;
         
-        if( !i ){
-            pre_a[i] = boost[0];
-            pre_b[i] = boost[1];
-        }
-        else{
-            pre_a[i] = max( boost[0] , pre_a[i-1] );
-            pre_b[i] = max( boost[1] , pre_b[i-1] );
+//         ll pick = ( s[node] * w ) + minTime( v , node , adj , s , dp );
+        
+
+//         ll nonPick = 1e12;
+//         if( prevCycle < n ){
+//             nonPick = ( s[prevCycle] * w ) + minTime( v , prevCycle , adj , s , dp );
+//         }
+
+//         mini = min( mini , min( pick , nonPick ));
+//     }
+
+//     return dp[node][prevCycle] = mini;
+// }
+
+
+
+vll dij( ll node , vector<vector<pll>>& adj ){
+    ll n = adj.size();
+
+    vll dis(n , 1e12);
+    dis[node] = 0;
+
+    priority_queue< pll , vector<pll> , greater<pll> > pq;
+
+    pq.push({ 0 , node });
+
+    while( !pq.empty() ){
+        
+        ll d = pq.top().first;
+        ll u = pq.top().second;
+        
+        pq.pop();
+
+        
+        if( d > dis[u] ) continue;
+
+        for(auto & it : adj[u]){
+
+            ll v = it.first;
+            ll w = it.second;
+            
+            ll d_new = d + w;
+        
+            if( dis[v] > d_new ){
+                dis[v] = d_new;
+                pq.push({ d_new , v });
+            }
         }
     }
 
-    suf_a[n-1] = sorted_boost[n-1][0];
-    suf_b[n-1] = sorted_boost[n-1][1];
-
-    for( int i = n-2 ; i >= 0 ; i-- ){
-        suf_a[i] = max( sorted_boost[i][0] , suf_a[i+1] );
-        suf_b[i] = max( sorted_boost[i][1] , suf_b[i+1] );        
-    }
-
-
-    int cnt = 0;
-
-    for(int i = 0 ; i < n ; i++){
-        int b = sorted_boost[i][1];
-        int c = sorted_boost[i][2];
-
-        int maxi_a = 0;
-        int maxi_b = 0;
-        if( i ){
-            maxi_a = pre_a[i-1];
-            maxi_b = pre_b[i-1];
-        }
-        if( i < n-1 ){
-            maxi_a = max( maxi_a , suf_a[i+1] );
-            maxi_b = max( maxi_b , suf_b[i+1] );
-        }
-
-        if( maxi_a < b && maxi_b < c ) cnt++;
-    }
-
-    return cnt;
+    return dis;
 }
+
 
 
 
@@ -346,60 +363,97 @@ void solve(){
     ll n , m;
     cin>>n>>m;
 
-    // 1 based
-    vector<vll> dp( n+2 , vll( n+2 , 0 )); // dp[i][j] -> total ways to remove j tokens from i to n 
+    vector<vector<pll>> adj(n);
+    for(int i = 0 ; i < m ; i++){
+        ll u , v , w;
+        cin>>u>>v>>w;
+        u--; v--;
 
-    dp[n+1][0] = 1;
+        adj[u].push_back({ v , w });
+        adj[v].push_back({ u , w });
+    }
 
-    for(int i = n ; i >= 1 ; i--){
-        for(int j = 0 ; j <= ( n - i + 1 ) ; j++){
-            // remove j toekns from i+1 to n 
-            if( j <= ( n - i ) ) dp[i][j] += dp[i+1][j];
-            dp[i][j] %= m;
-            
-            // remove the ith token and then remove j-1 tokens from i+1 to n
-            
-            // ways to remove ith token => ( n - i - j + 2 ) these indexes can remove the ith token * choices for these indices ( 1 to i )
-            
-            if( !j ) continue;
+    vll s(n);
+    for(int i = 0 ; i < n ; i++) cin>>s[i];
 
-            ll ways = ( i*( n - i - j + 2 )*dp[i+1][j-1] );
-            
-            dp[i][j] += ways;
-            dp[i][j] %= m;
 
+    
+    // vll dis = dij( 0 , adj );
+
+    // for(ll i = 0 ; i < n ; i++) dp[i][0] = dis[i] * s[0]; 
+
+    // for( ll j = 1 ; j < n ; j++ ){
+    //     for(ll i = 0 ; i < n ; i++){
+            
+    //         for( auto & it : adj[i] ){
+    //             ll v = it.first;
+    //             ll w = it.second;
+
+    //             dp[v][j] = min( dp[v][j] , dp[i][j-1] + s[j-1] * w );
+    //         }
+        
+    //     }
+    // }
+
+    // ll res = 1e12;
+    // for(ll j = 0 ; j < n ; j++){
+    //     res = min( res , dp[n-1][j] );
+    // }
+
+    // cout<<res<<endl;
+
+    // ll res = minTime( 0 , n , adj , s , dp );
+
+    // cout<<res<<endl;
+
+
+    vector<vll> dp( n , vll( n+1 , 1e12 ));
+
+
+    priority_queue< ppll , vector<ppll> , greater<ppll> > pq;
+    pq.push({ 0 , { 0 , n }});
+
+    while(!pq.empty()){
+        ll ti = pq.top().first;
+        ll city = pq.top().second.first;
+        ll lastCycle = pq.top().second.second;
+
+        pq.pop();
+
+        if( dp[city][lastCycle] <= ti ) continue;
+
+        dp[city][lastCycle] = ti;
+
+        for(auto & it : adj[city]){
+            ll v = it.first;
+            ll w = it.second;
+
+            ll pick = ti + s[city] * w;
+            pq.push({ pick , { v , city }});
+
+            if( lastCycle != n ){
+                ll nonPick = ti + s[lastCycle] * w;
+                pq.push({ nonPick , { v , lastCycle }});
+            }
         }
     }
 
-
-    ll res = 0;
-    for(ll j = 0 ; j <= n ; j++){
-        res += dp[1][j];
-        res %= m;
+    ll ans = 1e12;
+    for(auto & x : dp[n-1]){
+        ans = min( ans , x );
     }
 
-    cout<<res<<endl;
+    cout<<ans<<endl;
 }
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
-    // int t;
-    // cin>>t;
-    // // t = 1;
-    // while( t-- ){
-    //     solve();
-    // }
+    ll t;
+    cin>>t;
 
-    int n;
-    cin>>n;
-
-    vi ba(n) , bb(n) , bc(n);
-    for(int i = 0 ; i < n ; i++) cin>>ba[i];
-    for(int i = 0 ; i < n ; i++) cin>>bb[i];
-    for(int i = 0 ; i < n ; i++) cin>>bc[i];
-
-
-    cout<<possibleWinners(ba , bb , bc)<<endl;
+    while(t--){
+        solve();
+    }
 }

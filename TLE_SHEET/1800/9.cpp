@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -286,120 +286,123 @@ struct Fenwick {
   }
 };
 
-int possibleWinners( vector<int> boost_a , vector<int> boost_b , vector<int> boost_c ){
-    int n = boost_a.size();
 
-    vector<int> pre_a(n) , suf_a(n) , pre_b(n) , suf_b(n);
-    vector<vector<int>> sorted_boost(n);
-
-    for(int i = 0 ; i < n ; i++){
-        vector<int> boost = { boost_a[i] , boost_b[i] , boost_c[i] };
-        sort(boost.begin() , boost.end());
-
-        sorted_boost[i] = boost;
-        
-        if( !i ){
-            pre_a[i] = boost[0];
-            pre_b[i] = boost[1];
-        }
-        else{
-            pre_a[i] = max( boost[0] , pre_a[i-1] );
-            pre_b[i] = max( boost[1] , pre_b[i-1] );
-        }
-    }
-
-    suf_a[n-1] = sorted_boost[n-1][0];
-    suf_b[n-1] = sorted_boost[n-1][1];
-
-    for( int i = n-2 ; i >= 0 ; i-- ){
-        suf_a[i] = max( sorted_boost[i][0] , suf_a[i+1] );
-        suf_b[i] = max( sorted_boost[i][1] , suf_b[i+1] );        
-    }
-
-
-    int cnt = 0;
-
-    for(int i = 0 ; i < n ; i++){
-        int b = sorted_boost[i][1];
-        int c = sorted_boost[i][2];
-
-        int maxi_a = 0;
-        int maxi_b = 0;
-        if( i ){
-            maxi_a = pre_a[i-1];
-            maxi_b = pre_b[i-1];
-        }
-        if( i < n-1 ){
-            maxi_a = max( maxi_a , suf_a[i+1] );
-            maxi_b = max( maxi_b , suf_b[i+1] );
-        }
-
-        if( maxi_a < b && maxi_b < c ) cnt++;
-    }
-
-    return cnt;
-}
 
 
 
 void solve(){
-    ll n , m;
-    cin>>n>>m;
+    ll n;
+    cin>>n;
 
-    // 1 based
-    vector<vll> dp( n+2 , vll( n+2 , 0 )); // dp[i][j] -> total ways to remove j tokens from i to n 
+    vll a(n);
+    unordered_map<ll,vll> mp1;
+    for(int i = 0 ; i < n ; i++){
+        cin>>a[i];
+        mp1[a[i]].pb(i+1);
+    }
 
-    dp[n+1][0] = 1;
+    ll s , t;
+    cin>>s>>t;
 
-    for(int i = n ; i >= 1 ; i--){
-        for(int j = 0 ; j <= ( n - i + 1 ) ; j++){
-            // remove j toekns from i+1 to n 
-            if( j <= ( n - i ) ) dp[i][j] += dp[i+1][j];
-            dp[i][j] %= m;
-            
-            // remove the ith token and then remove j-1 tokens from i+1 to n
-            
-            // ways to remove ith token => ( n - i - j + 2 ) these indexes can remove the ith token * choices for these indices ( 1 to i )
-            
-            if( !j ) continue;
+    ll maxi = *max_element(a.begin() , a.end());
+    vll pri = primes(maxi+1);
 
-            ll ways = ( i*( n - i - j + 2 )*dp[i+1][j-1] );
-            
-            dp[i][j] += ways;
-            dp[i][j] %= m;
+    unordered_map<ll,vll> prime_nodes;
+    unordered_map<ll,vll> node_primes;
 
+    ll si = pri.size();
+    for(ll i = 0 ; i < si ; i++){
+        ll g = pri[i];
+        while( g <= maxi ){
+            if( !mp1.count(g) ){
+                g += pri[i];
+                continue;
+            }
+            for(auto & node : mp1[g]){
+                prime_nodes[pri[i]].pb(node);
+                node_primes[node].pb(pri[i]);
+            }
+            g += pri[i];
         }
     }
 
 
-    ll res = 0;
-    for(ll j = 0 ; j <= n ; j++){
-        res += dp[1][j];
-        res %= m;
+
+
+    vll dis(n+1 , 1e12);
+
+    dis[t] = 0;
+
+    priority_queue< pll , vector<pll> , greater<pll> > pq;
+    pq.push({ 0 , t });
+
+
+    vll vis(maxi+1 , 0);
+
+    while( !pq.empty() ){
+        ll ti = pq.top().first;
+        ll node = pq.top().second;
+
+        pq.pop();
+
+        if( node == s ) break;
+
+        for(auto & prim : node_primes[node]){
+            if( vis[prim] ) continue;
+            vis[prim] = 1;
+            for(auto & v : prime_nodes[prim]){
+                ll ti_new = ti + 1;
+                if( dis[v] > ti_new ){
+                    dis[v] = ti_new;
+                    pq.push({ ti_new , v });
+                }
+            }
+        }
     }
 
-    cout<<res<<endl;
+
+    if( dis[s] == 1e12 ){
+        cout<<-1<<endl;
+        return;
+    }
+
+
+
+    cout<<dis[s]+1<<endl;
+
+    ll u = s;
+    cout<<s<<" ";
+    while( u != t ){
+        
+
+        for(auto & prim : node_primes[u]){
+            bool ch = false;
+            for(auto & v : prime_nodes[prim]){
+                if( dis[v] == dis[u] - 1 ){
+                    cout<<v<<" ";
+                    u = v;
+                    ch = true;
+                    break;
+                }
+            }
+            if( ch ) break;
+        }
+
+
+    }
+
+    cout<<endl;
+
 }
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
-    // int t;
+    ll t;
     // cin>>t;
-    // // t = 1;
-    // while( t-- ){
-    //     solve();
-    // }
-
-    int n;
-    cin>>n;
-
-    vi ba(n) , bb(n) , bc(n);
-    for(int i = 0 ; i < n ; i++) cin>>ba[i];
-    for(int i = 0 ; i < n ; i++) cin>>bb[i];
-    for(int i = 0 ; i < n ; i++) cin>>bc[i];
-
-
-    cout<<possibleWinners(ba , bb , bc)<<endl;
+    t = 1;
+    while(t--){
+        solve();
+    }
 }

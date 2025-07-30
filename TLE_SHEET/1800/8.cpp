@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -30,7 +30,7 @@ using namespace std;
 #define all(a) (a).begin() , (a).end()
 #define prt(a) cout<<a<<endl
 
-const ll mod = 1e9+7;
+const ll mod = 1e9 + 7;
 const ll INF = 1e9;
 
 
@@ -201,8 +201,8 @@ ll lcm( ll a , ll b ){
 
 
 
-ll factorial[500000] = {0};
-ll fact_inv[500000] = {0};
+ll factorial[5000000] = {0};
+ll fact_inv[5000000] = {0};
 
 ll fact( ll n ){
     if( !n ) return 1LL;
@@ -286,120 +286,114 @@ struct Fenwick {
   }
 };
 
-int possibleWinners( vector<int> boost_a , vector<int> boost_b , vector<int> boost_c ){
-    int n = boost_a.size();
 
-    vector<int> pre_a(n) , suf_a(n) , pre_b(n) , suf_b(n);
-    vector<vector<int>> sorted_boost(n);
 
-    for(int i = 0 ; i < n ; i++){
-        vector<int> boost = { boost_a[i] , boost_b[i] , boost_c[i] };
-        sort(boost.begin() , boost.end());
-
-        sorted_boost[i] = boost;
-        
-        if( !i ){
-            pre_a[i] = boost[0];
-            pre_b[i] = boost[1];
-        }
-        else{
-            pre_a[i] = max( boost[0] , pre_a[i-1] );
-            pre_b[i] = max( boost[1] , pre_b[i-1] );
-        }
+ll dfs1( ll node , ll par , vll & down , vector<vll>& adj ){
+    ll maxi = 0;
+    for(auto & x : adj[node]){
+        if( x == par ) continue;
+        ll d = dfs1(x , node , down , adj);
+        maxi = max( maxi , d );
     }
 
-    suf_a[n-1] = sorted_boost[n-1][0];
-    suf_b[n-1] = sorted_boost[n-1][1];
-
-    for( int i = n-2 ; i >= 0 ; i-- ){
-        suf_a[i] = max( sorted_boost[i][0] , suf_a[i+1] );
-        suf_b[i] = max( sorted_boost[i][1] , suf_b[i+1] );        
-    }
-
-
-    int cnt = 0;
-
-    for(int i = 0 ; i < n ; i++){
-        int b = sorted_boost[i][1];
-        int c = sorted_boost[i][2];
-
-        int maxi_a = 0;
-        int maxi_b = 0;
-        if( i ){
-            maxi_a = pre_a[i-1];
-            maxi_b = pre_b[i-1];
-        }
-        if( i < n-1 ){
-            maxi_a = max( maxi_a , suf_a[i+1] );
-            maxi_b = max( maxi_b , suf_b[i+1] );
-        }
-
-        if( maxi_a < b && maxi_b < c ) cnt++;
-    }
-
-    return cnt;
+    down[node] = 1 + maxi;
+    return down[node];
 }
 
 
+void dfs2( ll node , ll par , ll parDepth , vll & up , vll & down , vector<vll>& adj ){
+    
+    up[node] = parDepth;
+
+
+    ll si = adj[node].size();
+    vll pre(si , 0) , suff(si , 0);
+
+    for(int i = 0 ; i < si ; i++){
+        if( adj[node][i] == par ){
+            if( i ) pre[i] = pre[i-1];
+            continue;
+        }
+        if( i ) pre[i] = max( pre[i-1] , down[adj[node][i]] );
+        else pre[i] = down[adj[node][i]];
+    }
+
+    for(int i = si-1 ; i >= 0 ; i--){
+        if( adj[node][i] == par ){
+            if( i < si - 1 ) suff[i] = suff[i+1];
+            continue;
+        }
+        if( i < si - 1 ) suff[i] = max( suff[i+1] , down[adj[node][i]] );
+        else suff[i] = down[adj[node][i]];
+    }
+
+    
+    
+    for(int i = 0 ; i < si ; i++){
+        if( adj[node][i] == par ) continue;
+
+        ll tmp = max( ( i ? pre[i-1] : 0 ) , ( i < si - 1 ? suff[i+1] : 0 ) );
+
+        tmp = max( tmp , parDepth );
+        tmp++;
+
+        dfs2( adj[node][i] , node , tmp , up , down , adj );
+    }
+
+    return;
+}
+
 
 void solve(){
-    ll n , m;
-    cin>>n>>m;
-
-    // 1 based
-    vector<vll> dp( n+2 , vll( n+2 , 0 )); // dp[i][j] -> total ways to remove j tokens from i to n 
-
-    dp[n+1][0] = 1;
-
-    for(int i = n ; i >= 1 ; i--){
-        for(int j = 0 ; j <= ( n - i + 1 ) ; j++){
-            // remove j toekns from i+1 to n 
-            if( j <= ( n - i ) ) dp[i][j] += dp[i+1][j];
-            dp[i][j] %= m;
-            
-            // remove the ith token and then remove j-1 tokens from i+1 to n
-            
-            // ways to remove ith token => ( n - i - j + 2 ) these indexes can remove the ith token * choices for these indices ( 1 to i )
-            
-            if( !j ) continue;
-
-            ll ways = ( i*( n - i - j + 2 )*dp[i+1][j-1] );
-            
-            dp[i][j] += ways;
-            dp[i][j] %= m;
-
-        }
+    ll n;
+    cin>>n;
+    
+    vector<vector<ll>> adj( n );
+    for(int i = 0 ; i < n-1 ; i++){
+        ll u , v;
+        cin>>u>>v;
+        u--;
+        v--;
+        adj[u].pb(v);
+        adj[v].pb(u);
     }
 
 
-    ll res = 0;
-    for(ll j = 0 ; j <= n ; j++){
-        res += dp[1][j];
-        res %= m;
+    vll down(n,0);
+    vll up(n,0);
+
+
+    dfs1(0 , -1 , down , adj);
+    dfs2(0 , -1 , 0 , up , down , adj);
+
+    // for(auto & it : down) cout<<it<<" ";
+    // cout<<endl;
+    // for(auto & it : up) cout<<it<<" ";
+    // cout<<endl;
+
+    vll res( n+1 , 0 );
+
+    for(int i = 0 ; i < n ; i++){
+        ll maxDepth = max( down[i] , 1 + up[i] );
+        res[ min(maxDepth , n) ]++;
     }
 
-    cout<<res<<endl;
+    ll sum = 0;
+    for(int i = 1 ; i <= n ; i++){
+        sum += res[i];
+        cout<<min(sum+1 , n)<<" ";
+    }
+    cout<<endl;
 }
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
-    // int t;
+    ll t;
     // cin>>t;
-    // // t = 1;
-    // while( t-- ){
-    //     solve();
-    // }
-
-    int n;
-    cin>>n;
-
-    vi ba(n) , bb(n) , bc(n);
-    for(int i = 0 ; i < n ; i++) cin>>ba[i];
-    for(int i = 0 ; i < n ; i++) cin>>bb[i];
-    for(int i = 0 ; i < n ; i++) cin>>bc[i];
-
-
-    cout<<possibleWinners(ba , bb , bc)<<endl;
+    t = 1;
+    while(t--){
+        solve();
+    }
 }

@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -30,7 +30,7 @@ using namespace std;
 #define all(a) (a).begin() , (a).end()
 #define prt(a) cout<<a<<endl
 
-const ll mod = 1e9+7;
+const ll mod = 1e9 + 7;
 const ll INF = 1e9;
 
 
@@ -201,8 +201,8 @@ ll lcm( ll a , ll b ){
 
 
 
-ll factorial[500000] = {0};
-ll fact_inv[500000] = {0};
+ll factorial[5000000] = {0};
+ll fact_inv[5000000] = {0};
 
 ll fact( ll n ){
     if( !n ) return 1LL;
@@ -286,55 +286,30 @@ struct Fenwick {
   }
 };
 
-int possibleWinners( vector<int> boost_a , vector<int> boost_b , vector<int> boost_c ){
-    int n = boost_a.size();
 
-    vector<int> pre_a(n) , suf_a(n) , pre_b(n) , suf_b(n);
-    vector<vector<int>> sorted_boost(n);
+ll numer;
+ll deno;
 
-    for(int i = 0 ; i < n ; i++){
-        vector<int> boost = { boost_a[i] , boost_b[i] , boost_c[i] };
-        sort(boost.begin() , boost.end());
 
-        sorted_boost[i] = boost;
-        
-        if( !i ){
-            pre_a[i] = boost[0];
-            pre_b[i] = boost[1];
-        }
-        else{
-            pre_a[i] = max( boost[0] , pre_a[i-1] );
-            pre_b[i] = max( boost[1] , pre_b[i-1] );
-        }
+
+ll dfs( ll node , ll par , vector<vector<int>>& adj , ll k ){
+    ll n = adj.size();
+
+    ll cnt = 1;
+
+
+    for(auto & v : adj[node]){
+        if( v == par ) continue;
+        ll x = dfs( v , node , adj , k );
+        cnt += x;
     }
 
-    suf_a[n-1] = sorted_boost[n-1][0];
-    suf_b[n-1] = sorted_boost[n-1][1];
-
-    for( int i = n-2 ; i >= 0 ; i-- ){
-        suf_a[i] = max( sorted_boost[i][0] , suf_a[i+1] );
-        suf_b[i] = max( sorted_boost[i][1] , suf_b[i+1] );        
-    }
-
-
-    int cnt = 0;
-
-    for(int i = 0 ; i < n ; i++){
-        int b = sorted_boost[i][1];
-        int c = sorted_boost[i][2];
-
-        int maxi_a = 0;
-        int maxi_b = 0;
-        if( i ){
-            maxi_a = pre_a[i-1];
-            maxi_b = pre_b[i-1];
+    if( par != -1 ){
+        ll tmp = 0;
+        if( cnt >= k/2 && n - cnt >= k/2 ){
+            tmp = ( ncr(cnt , k/2) * ncr(n - cnt , k/2) ) % mod;
         }
-        if( i < n-1 ){
-            maxi_a = max( maxi_a , suf_a[i+1] );
-            maxi_b = max( maxi_b , suf_b[i+1] );
-        }
-
-        if( maxi_a < b && maxi_b < c ) cnt++;
+        numer = ( numer + tmp ) % mod;
     }
 
     return cnt;
@@ -343,63 +318,54 @@ int possibleWinners( vector<int> boost_a , vector<int> boost_b , vector<int> boo
 
 
 void solve(){
-    ll n , m;
-    cin>>n>>m;
+    ll n , k;
+    cin>>n>>k;
 
-    // 1 based
-    vector<vll> dp( n+2 , vll( n+2 , 0 )); // dp[i][j] -> total ways to remove j tokens from i to n 
 
-    dp[n+1][0] = 1;
+    vector<vector<int>> adj( n );
+    for(int i = 0 ; i < n-1 ; i++){
+        ll u , v;
+        cin>>u>>v;
 
-    for(int i = n ; i >= 1 ; i--){
-        for(int j = 0 ; j <= ( n - i + 1 ) ; j++){
-            // remove j toekns from i+1 to n 
-            if( j <= ( n - i ) ) dp[i][j] += dp[i+1][j];
-            dp[i][j] %= m;
-            
-            // remove the ith token and then remove j-1 tokens from i+1 to n
-            
-            // ways to remove ith token => ( n - i - j + 2 ) these indexes can remove the ith token * choices for these indices ( 1 to i )
-            
-            if( !j ) continue;
+        u--;
+        v--;
 
-            ll ways = ( i*( n - i - j + 2 )*dp[i+1][j-1] );
-            
-            dp[i][j] += ways;
-            dp[i][j] %= m;
-
-        }
+        adj[u].pb(v);
+        adj[v].pb(u);
     }
 
 
-    ll res = 0;
-    for(ll j = 0 ; j <= n ; j++){
-        res += dp[1][j];
-        res %= m;
+    if( k & 1 ){
+        cout<<1<<endl;
+        return;
     }
 
-    cout<<res<<endl;
+    numer = 0;
+    deno = 0;
+    
+    deno = ncr(n , k);
+
+
+    dfs(0 , -1 , adj , k);
+
+
+    ll deno_inv = modPow( deno , mod - 2 ) % mod;
+
+    ll ans = ( numer * deno_inv ) % mod;
+
+    ans = ( ans + 1 ) % mod;
+
+    cout<<ans<<endl;
 }
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
-    // int t;
+    ll t;
     // cin>>t;
-    // // t = 1;
-    // while( t-- ){
-    //     solve();
-    // }
-
-    int n;
-    cin>>n;
-
-    vi ba(n) , bb(n) , bc(n);
-    for(int i = 0 ; i < n ; i++) cin>>ba[i];
-    for(int i = 0 ; i < n ; i++) cin>>bb[i];
-    for(int i = 0 ; i < n ; i++) cin>>bc[i];
-
-
-    cout<<possibleWinners(ba , bb , bc)<<endl;
+    t = 1;
+    while(t--){
+        solve();
+    }
 }

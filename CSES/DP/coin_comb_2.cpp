@@ -286,120 +286,28 @@ struct Fenwick {
   }
 };
 
-int possibleWinners( vector<int> boost_a , vector<int> boost_b , vector<int> boost_c ){
-    int n = boost_a.size();
-
-    vector<int> pre_a(n) , suf_a(n) , pre_b(n) , suf_b(n);
-    vector<vector<int>> sorted_boost(n);
-
-    for(int i = 0 ; i < n ; i++){
-        vector<int> boost = { boost_a[i] , boost_b[i] , boost_c[i] };
-        sort(boost.begin() , boost.end());
-
-        sorted_boost[i] = boost;
-        
-        if( !i ){
-            pre_a[i] = boost[0];
-            pre_b[i] = boost[1];
-        }
-        else{
-            pre_a[i] = max( boost[0] , pre_a[i-1] );
-            pre_b[i] = max( boost[1] , pre_b[i-1] );
-        }
-    }
-
-    suf_a[n-1] = sorted_boost[n-1][0];
-    suf_b[n-1] = sorted_boost[n-1][1];
-
-    for( int i = n-2 ; i >= 0 ; i-- ){
-        suf_a[i] = max( sorted_boost[i][0] , suf_a[i+1] );
-        suf_b[i] = max( sorted_boost[i][1] , suf_b[i+1] );        
-    }
-
-
-    int cnt = 0;
-
-    for(int i = 0 ; i < n ; i++){
-        int b = sorted_boost[i][1];
-        int c = sorted_boost[i][2];
-
-        int maxi_a = 0;
-        int maxi_b = 0;
-        if( i ){
-            maxi_a = pre_a[i-1];
-            maxi_b = pre_b[i-1];
-        }
-        if( i < n-1 ){
-            maxi_a = max( maxi_a , suf_a[i+1] );
-            maxi_b = max( maxi_b , suf_b[i+1] );
-        }
-
-        if( maxi_a < b && maxi_b < c ) cnt++;
-    }
-
-    return cnt;
-}
-
-
-
-void solve(){
-    ll n , m;
-    cin>>n>>m;
-
-    // 1 based
-    vector<vll> dp( n+2 , vll( n+2 , 0 )); // dp[i][j] -> total ways to remove j tokens from i to n 
-
-    dp[n+1][0] = 1;
-
-    for(int i = n ; i >= 1 ; i--){
-        for(int j = 0 ; j <= ( n - i + 1 ) ; j++){
-            // remove j toekns from i+1 to n 
-            if( j <= ( n - i ) ) dp[i][j] += dp[i+1][j];
-            dp[i][j] %= m;
-            
-            // remove the ith token and then remove j-1 tokens from i+1 to n
-            
-            // ways to remove ith token => ( n - i - j + 2 ) these indexes can remove the ith token * choices for these indices ( 1 to i )
-            
-            if( !j ) continue;
-
-            ll ways = ( i*( n - i - j + 2 )*dp[i+1][j-1] );
-            
-            dp[i][j] += ways;
-            dp[i][j] %= m;
-
-        }
-    }
-
-
-    ll res = 0;
-    for(ll j = 0 ; j <= n ; j++){
-        res += dp[1][j];
-        res %= m;
-    }
-
-    cout<<res<<endl;
-}
 
 int main(){
     ios_base::sync_with_stdio(0);
-    cin.tie(0); cout.tie(0);
+    cin.tie(0);
+    cout.tie(0);
 
-    // int t;
-    // cin>>t;
-    // // t = 1;
-    // while( t-- ){
-    //     solve();
-    // }
+    ll n,x;
+    cin>>n>>x;
 
-    int n;
-    cin>>n;
+    vll c(n);
+    for(int i = 0 ; i < n ; i++) cin>>c[i];
 
-    vi ba(n) , bb(n) , bc(n);
-    for(int i = 0 ; i < n ; i++) cin>>ba[i];
-    for(int i = 0 ; i < n ; i++) cin>>bb[i];
-    for(int i = 0 ; i < n ; i++) cin>>bc[i];
+    sort(c.begin() , c.end());
 
+    vll dp(x+1 , 0); // dp[i] -> number of ways to get sum i
+    dp[0] = 1;
 
-    cout<<possibleWinners(ba , bb , bc)<<endl;
+    for(ll j = 0 ; j < n ; j++){
+        for(ll i = 1 ; i <= x ; i++){
+            if( i >= c[j] ) dp[i] = ( dp[i] + dp[i - c[j]]) % mod;
+        }
+    }
+
+    cout<<dp[x]<<endl;
 }
