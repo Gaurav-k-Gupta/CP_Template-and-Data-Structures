@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -281,42 +281,114 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
+
+ll help( ll i , ll j , vll & a , vector<vll>& dp ){
+    
+    if( i == j ) return 0;
+    
+    if( dp[i][j] != -1 ) return dp[i][j];
+
+    ll cnt = a[j] - a[i];
+    
+    ll t1 = cnt + help( i+1 , j , a , dp );
+    ll t2 = cnt + help( i , j-1 , a , dp );
+
+    return dp[i][j] = min(t1 , t2);
+}
 
 
+pll best_choice( vll & a ){
+    ll n = a.size();
+    vll dp( n , 0 );
+    ll maxi = 0;
+    ll maxI = n;
+    for(ll i = n-1 ; i >= 0 ; i--){
+        if( a[i] > 1 ) dp[i] = 1;
+        if( i + a[i] < n ) dp[i] += dp[i + a[i]];
+
+        if( dp[i] >= maxi ){
+            maxi = dp[i];
+            maxI = i;
+        }
+    }
+
+    return { maxi , maxI };
+}
+
+
+ll dfs( ll u , ll par , vector<vll> & adj , vll & paths_cnt ){
+
+    if( adj[u].size() == 1 && u != 0 ){
+        paths_cnt[u] = 1;
+        return 1;
+    }
+
+    ll cnt = 0;
+    for(auto & x : adj[u]){
+        if( x == par ) continue;
+        cnt += dfs( x , u , adj , paths_cnt );
+    }
+
+    return paths_cnt[u] = cnt;
+}
+
+
+
+void dfs2( ll u , ll par , vector<vll> & adj , vll & paths_cnt ){
+    if( par != -1 ){
+        ll z = paths_cnt[par];
+        ll y = paths_cnt[u];
+        ll others = z - y;
+        paths_cnt[u] += max(1LL , others);
+    }
+
+    for( auto & x : adj[u] ){
+        if( x == par ) continue;
+        dfs2( x , u , adj , paths_cnt );
+    }
+
+    if( adj[u].size() == 1 && u != 0 ) paths_cnt[u]--;
+
+    return;
+}
+
+
+
+vector<vll> changePerm( ll A , vll & B , ll C ){
+    
+}
 
 
 void solve(){
+    
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vll a(n) , b(n);
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    for(int i = 0 ; i < n ; i++) cin>>a[i];
+    for(int i = 0 ; i < n ; i++) cin>>b[i];
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
 
+    bool check = true;
+    if( a[n-1] != b[n-1] ){
+        no;
+        return;
+    }
+
+
+    for(int i = n-2 ; i >= 0 ; i--){
+        if( a[i] == b[i] ) continue;
+        if( ((a[i] ^ a[i+1]) == b[i] ) || ((a[i] ^ b[i+1]) == b[i]) ) continue;
+        else{
+            check = false;
+            break;
+        }
+    }
+
+    if( check ) yes;
+    else no;
 }
 
 int main(){
@@ -325,6 +397,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

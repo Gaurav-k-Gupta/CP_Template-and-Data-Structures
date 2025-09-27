@@ -259,70 +259,61 @@ class disjoint_set{
 
 
 
+string to_bits( ll n ){
+    string res(63 , '0');
+    ll i = 0;
+    while( i <= 62 ){
+        if( ((n >> i) & 1) ) res[i] = '1';
+        i++;
+    }
 
+    return res;
+}
 
 
 void solve(){
     ll n , x;
     cin>>n>>x;
 
-    if( x > n ){
-        cout<<-1<<endl;
+    if( n == x ){
+        cout<<n<<endl;
         return;
     }
 
-    vll bn , bx;
+    string N = to_bits(n);
+    string X = to_bits(x);
 
-    ll nn = n;
-    while( nn ){
-        bn.push_back(nn & 1);
-        nn >> 1;
-    }
+    // cout<<N<<endl;
 
-    ll xx = x;
-    while( xx ){
-        bx.push_back(xx & 1);
-        xx >> 1;
-    }
-
-
-    while(bx.size() < bn.size()) bx.push_back(0);
-
-    // reverse(bn.begin() , bn.end());
-    // reverse(bx.begin() , bx.end());
+    ll m = n;
+    ll cnt = 0;
+    ll ones = 0;
+    ll pre_zeros = 0;
 
     bool check = true;
-    ll prev = -1;
-
-    ll l1 = Pow( 2 , bn.size() ) - 1LL; // minimize 1 0
-    ll l2 = n;  // maximize 1 1
-
-    ll v2 = l1+1;
-
-    for(int i = bn.size()-1 ; i >= 0 ; i--){
-        if( !bn[i] && bx[i] ){
-            check = false;
-            break;
+    for(ll i = 62 ; i >= 0 ; i--){
+        if( N[i] == X[i] ){
+            if( N[i] == '1' ) pre_zeros = 0;
+            else pre_zeros++;
+            continue;
         }
-        else if( !bn[i] && !bx[i] ) continue;
         else{
-            ll val = Pow(2LL , prev);
-            if( prev == -1 ) val = v2;
-            else{
-                for(ll j = prev+1 ; j < bn.size() ; j++){
-                    if( bn[j] ) val += Pow(2 , j);
-                }
+            if( !pre_zeros ) check = false;
+            while( i >= 0 ){
+                if( X[i] == '1' ) check = false;
+                if( N[i] == '0' ) cnt += ( 1LL << i );
+                else ones++;
+                i--;
             }
-            
-            if( bn[i] && bx[i] ) l2 = max( l2 , val );
-            else l1 = min( l1 , val );
         }
-
-        if( !bn[i] ) prev = i;
     }
 
-    if( l1 < l2 ) cout<<l1<<endl;
-    else cout<<-1<<endl;
+    if( !check ){
+        cout<<-1<<endl;
+    }
+    else{
+        cout<<n+cnt+1<<endl;
+    }
 }
 
 int main(){

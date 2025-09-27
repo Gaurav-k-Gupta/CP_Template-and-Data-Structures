@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -281,41 +281,120 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
 
+ll help( ll i , ll j , vll & a , vector<vll>& dp ){
+    
+    if( i == j ) return 0;
+    
+    if( dp[i][j] != -1 ) return dp[i][j];
+
+    ll cnt = a[j] - a[i];
+    
+    ll t1 = cnt + help( i+1 , j , a , dp );
+    ll t2 = cnt + help( i , j-1 , a , dp );
+
+    return dp[i][j] = min(t1 , t2);
+}
+
+
+pll best_choice( vll & a ){
+    ll n = a.size();
+    vll dp( n , 0 );
+    ll maxi = 0;
+    ll maxI = n;
+    for(ll i = n-1 ; i >= 0 ; i--){
+        if( a[i] > 1 ) dp[i] = 1;
+        if( i + a[i] < n ) dp[i] += dp[i + a[i]];
+
+        if( dp[i] >= maxi ){
+            maxi = dp[i];
+            maxI = i;
+        }
+    }
+
+    return { maxi , maxI };
+}
 
 
 
 void solve(){
+    
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vll a(n);
+    for(int i = 0 ; i < n ; i++) cin>>a[i];
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    if( n == 1 ){
+        cout<<a[0]-1<<endl;
+        return;
+    }
+    else if( n == 2 ){
+        cout<<(a[0] + a[1] - 2)<<endl;
+        return;
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    vll dp( n , 0 ); // dp[i] -> No of pekora currently on index i ( extras )
+    ll i = 0;
+    ll passes = 0;
+    ll x = 0;
+    while( i < n ){
+        // cout<<i<<endl;
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+        x += dp[i]; // no of pekoras arrived here before , for them passes have been added already 
+        
+        ll on_next = 1 - ( a[i] - x );
+        if( on_next > 0 ){
+            if( i + 1 < n ) dp[i+1] += on_next;
+            if( i + 2 < n ) dp[i+2] -= on_next;
+        }
+
+        if( x > 0 ){
+            ll start = max( i + a[i] - x + 1 , i+2 );
+            if( start < n ) dp[start]++;
+            if( i + a[i] + 1 < n ) dp[i+a[i]+1]--;
+        }
+        
+
+        a[i] = max( a[i] - x , 1LL );
+
+
+        // ll x = dp[i]; // no of pekoras arrived here before , for them passes have been added already 
+        // while( x-- ){
+        //     if( i + a[i] < n ) dp[i + a[i]]++;
+        //     a[i] = max( a[i] - 1 , 1LL );
+        // }
+
+
+
+
+        if( a[i] == 1 ){
+            i++;
+            continue;
+        }
+        else{
+            // cout<<"YES"<<endl;
+
+            ll nxt = i + a[i];
+            if( nxt > n ){
+                passes += ( nxt - n );
+                a[i] -= ( nxt - n );
+            }
+
+            while( a[i] > 1 ){
+                if( i + a[i] < n ) dp[i + a[i]]++;
+                if( i + a[i] + 1 < n ) dp[i + a[i] + 1]--;
+                a[i]--;
+                passes++;
+            }
+
+            i++;
+            // cout<<a[i]<<" "<<passes<<endl;
+        }
+    }
+
+
+    cout<<passes<<endl;
 
 }
 
@@ -325,6 +404,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

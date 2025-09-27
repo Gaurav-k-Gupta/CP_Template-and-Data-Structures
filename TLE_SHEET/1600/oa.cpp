@@ -20,7 +20,7 @@ using namespace std;
 #define pi pair<int,int>
 #define pll pair<ll,ll>
 #define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -281,41 +281,63 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
-
-
-
 
 void solve(){
+    
+    ll n , m;
+    cin>>n>>m;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vector<vector<ppll>> adj(n+1);
+    vll deadline(n+1 , 0);
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    for(int i = 0 ; i < m ; i++){
+        ll si , di , ci;
+        cin>>si>>di>>ci;
+        adj[si].pb({di , {ci , i+1}});
+        deadline[di] = 1;
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    // deadline , no of days rem , task id
+    priority_queue< ppll , vector<ppll> , greater<ppll> > pq;
+    
+    vll res(n+1 , 0);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    for(ll i = 1 ; i <= n ; i++){
+        for(auto & it : adj[i]){
+            pq.push({it.first , {it.second.first , it.second.second}});
+        }
+
+
+        ll di , ci , id;
+        // cout<<deadline[i]<<" ";
+        if( deadline[i] ){
+            if( deadline[i] == 2 ) res[i] = m+1;
+            else{
+                cout<<-1<<endl;
+                return;
+            }
+            continue;
+        }
+        else if( pq.empty() ) continue;
+
+        di = pq.top().first;
+        ci = pq.top().second.first;
+        id = pq.top().second.second;
+
+        pq.pop();
+
+        res[i] = id;
+
+        if( ci > 1 ) pq.push({di , {ci-1 , id}});
+        else deadline[di] = 2;
+    }
+
+
+    for(int i = 1 ; i <= n ; i++){
+        cout<<res[i]<<" ";
+    }
+
+    cout<<endl;
 
 }
 
@@ -324,7 +346,8 @@ int main(){
     cin.tie(0); cout.tie(0);
 
     int t;
-    cin>>t;
+    // cin>>t;
+    t = 1;
     while( t-- ){
         solve();
     }

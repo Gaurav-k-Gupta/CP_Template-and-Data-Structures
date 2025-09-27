@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -281,42 +281,74 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
+
+
+ll max_score( ll i , ll x , ll f , vll & a , ll & z , ll & k , vector<vector<vll>> & dp){
+    ll n = a.size();
+
+    ll cnt = i + 2*x;
+
+    if( cnt == k ) return 0;
+
+    if( dp[i][x][f] != -1 ) return dp[i][x][f];
+
+    ll right = -INF;
+    if( i < n-1 ){
+        right = a[i+1] + max_score( i+1 , x , 0 , a , z , k , dp );
+    }
+
+    ll left = -INF;
+    if( !f && x < z && i ){
+        left = a[i-1] + max_score( i-1 , x+1 , 1 , a , z , k , dp );
+    }
+
+    
+    return dp[i][x][f] = max( left , right );
+}
+
 
 
 
 
 void solve(){
+    
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vll a(n);
+    vll pre_g(n) , suf_g(n);
+    for(ll i = 0 ; i < n ; i++){
+        cin>>a[i];
+        if(i) pre_g[i] = __gcd( pre_g[i-1] , a[i] );
+        else pre_g[i] = a[i];
+    }
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    suf_g[n-1] = a[n-1];
+    for(ll i = n-2 ; i >= 0 ; i--){
+        suf_g[i] = __gcd( suf_g[i+1] , a[i] );
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    
+    ll res;
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
 
+    for(ll i = 0 ; i < n ; i++){
+        ll g;
+        if( i == 0 ) g = suf_g[i+1];
+        else if( i == n-1 ) g = pre_g[i-1];
+        else g = __gcd( pre_g[i-1] , suf_g[i+1] );
+
+
+        // cout<<i<<" "<<g<<endl;
+        
+        ll l = ( a[i] * g ) / __gcd(a[i] , g );
+        if( i ) res = __gcd( l , res );
+        else res = l;
+    }
+
+
+
+    cout<<res<<endl;
 }
 
 int main(){
@@ -324,7 +356,8 @@ int main(){
     cin.tie(0); cout.tie(0);
 
     int t;
-    cin>>t;
+    // cin>>t;
+    t = 1;
     while( t-- ){
         solve();
     }

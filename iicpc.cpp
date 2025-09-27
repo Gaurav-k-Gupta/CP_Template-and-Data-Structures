@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e14;
 
 
 
@@ -182,23 +182,14 @@ ll Pow( ll x , ll exp ){
 }
 
 
-ll gcd(ll a, ll b, ll& x, ll& y) {
-    x = 1, y = 0;
-    ll x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        ll q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
-    }
-    return a1;
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
 }
 
-ll lcm( ll a , ll b ){
-    ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+ll lcm(ll a , ll b){
+    ll g = gcd(a,b);
+    return (a*b)/g;
 }
-
 
 
 ll factorial[500000] = {0};
@@ -234,7 +225,6 @@ class disjoint_set{
         this->size.resize(size+1,1);
         for(int i=0 ; i<=size ; i++) par[i] = i;
     }
-
     int Find(int X)
     {
        if(X==par[X]) return X;
@@ -267,55 +257,53 @@ class disjoint_set{
     }
 };
 
-vll pi_func( string & s ){
-    ll n = s.size();
-    vll pii(n);
-    for(ll i = 1 ; i < n ; i++){
-        ll j = pii[i-1];
-        while( j && s[i] != s[j] ){
-            j = pii[j-1];
-        }
-        if( s[i] == s[j] ) j++;
-        pii[i] = j;
-    }
-    return pii;
-}
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
-
-
-
-
+#define ld long double
 void solve(){
+    
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll a , b;
+    cin>>a>>b;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    vll tele(n+1 , 0) , tim(n+1 , 0);
+    for(ll i = 0 ; i < a ; i++){
+        ll p;
+        cin>>p;
+        tele[p] = 1;
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    for(ll i = 0 ; i < b ; i++){
+        ll p;
+        cin>>p;
+        tim[p] = 1;
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+
+    vector<ld> dp(n+1 , 0);
+    dp[1] = 1;
+    ld cnt = dp[1] / (ld)(n-1);
+
+    ld prob = 0;
+
+
+    for(ll i = 2 ; i <= n ; i++){
+        dp[i] = cnt;
+        if( !tele[i] && !tim[i] ){
+            cnt += dp[i] / (ld)(n-i);
+        }
+
+        if( tim[i] ) prob += dp[i];
+    }
+
+
+    ld x = (ld)1/ (ld)( 1 - dp[n] );
+    prob *= x;
+
+    cout<<prob<<endl;
+
+
 
 }
 
@@ -323,9 +311,54 @@ int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
+
+    vector<vector<ld>> dp( 101 , vector<ld>(1001 , 0));
+
+    for(ll i = 1 ; i <= 100 ; i++){
+        dp[i][0] = 1;
+    }
+
+    ld p = (ld)1/(ld)100;
+    vector<ld> pre(101 , 0);
+    for(ll i = 1 ; i <= 100 ; i++){
+        pre[i] = pre[i-1] + dp[i][0];
+    }
+
+    for(ll j = 1 ; j <= 1000 ; j++){
+        for(ll i = 1 ; i <= 100 ; i++){
+            dp[i][j] = pre[i] * p;
+        }
+
+        for(ll i = 1 ; i <= 100 ; i++){
+            pre[i] = pre[i-1] + dp[i][j];
+        }
+    }
+
+
+
     int t;
     cin>>t;
-    while( t-- ){
-        solve();
+    // t = 1;
+    while(t--){
+        ll n;
+        cin>>n;
+
+
+        ld a , b;
+        cin>>a>>b;
+
+
+        ld p = 0 , q = 0;
+
+        for(ll i = 1 ; i <= 100 ; i++){
+            ld v = (ld)1 / (ld)(i);
+
+            if( v > a && v <= b ) p += dp[i][n];
+            q += dp[i][n];
+        }
+
+
+        cout<<p/q<<endl;
+
     }
 }

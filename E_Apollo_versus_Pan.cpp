@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e14;
 
 
 
@@ -182,23 +182,14 @@ ll Pow( ll x , ll exp ){
 }
 
 
-ll gcd(ll a, ll b, ll& x, ll& y) {
-    x = 1, y = 0;
-    ll x1 = 0, y1 = 1, a1 = a, b1 = b;
-    while (b1) {
-        ll q = a1 / b1;
-        tie(x, x1) = make_tuple(x1, x - q * x1);
-        tie(y, y1) = make_tuple(y1, y - q * y1);
-        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
-    }
-    return a1;
+ll gcd( ll a , ll b ){
+    return b ? gcd( b , a%b ) : a;
 }
 
-ll lcm( ll a , ll b ){
-    ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+ll lcm(ll a , ll b){
+    ll g = gcd(a,b);
+    return (a*b)/g;
 }
-
 
 
 ll factorial[500000] = {0};
@@ -234,7 +225,6 @@ class disjoint_set{
         this->size.resize(size+1,1);
         for(int i=0 ; i<=size ; i++) par[i] = i;
     }
-
     int Find(int X)
     {
        if(X==par[X]) return X;
@@ -267,56 +257,58 @@ class disjoint_set{
     }
 };
 
-vll pi_func( string & s ){
-    ll n = s.size();
-    vll pii(n);
-    for(ll i = 1 ; i < n ; i++){
-        ll j = pii[i-1];
-        while( j && s[i] != s[j] ){
-            j = pii[j-1];
-        }
-        if( s[i] == s[j] ) j++;
-        pii[i] = j;
-    }
-    return pii;
-}
-
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
-
-
 
 
 void solve(){
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vll a(n);
+    for(int i = 0 ; i < n ; i++) cin>>a[i];
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    vll bits_cnt(63 , 0);
+    for(ll i = 0 ; i < n ; i++){
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+        for( ll b = 62 ; b >= 0 ; b-- ){
+            if( (a[i] >> b) & 1 ) bits_cnt[b]++;
+        }
 
+    }
+
+    
+
+
+    ll ans = 0;
+
+    for(ll j = 0 ; j < n ; j++){
+
+        ll xj = a[j];
+        
+        ll c1 = 0;
+        for( ll b = 62 ; b >= 0 ; b-- ){
+            ll b1 = ( xj >> b ) & 1;
+            if( !b1 ) continue;
+            ll bc = bits_cnt[b];
+            ll mul = ( 1LL << b ) % mod;
+            c1 = ( c1 + ( bc * mul ) % mod ) % mod;
+        }
+
+
+        ll c2 = 0;
+        for( ll b = 62 ; b >= 0 ; b-- ){
+            ll b1 = ( xj >> b ) & 1;
+            ll bc = bits_cnt[b];
+            if( b1 ) bc = n;
+            ll mul = ( 1LL << b ) % mod;
+            c2 = ( c2 + ( bc * mul ) % mod ) % mod;
+        }
+
+        ans = ( ans + (c1 * c2) % mod ) % mod;
+    }
+
+
+    cout<<ans<<endl;
 }
 
 int main(){
@@ -325,7 +317,8 @@ int main(){
 
     int t;
     cin>>t;
-    while( t-- ){
+    // t = 1;
+    while(t--){
         solve();
     }
 }
