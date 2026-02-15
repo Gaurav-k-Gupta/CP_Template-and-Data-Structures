@@ -31,7 +31,7 @@ using namespace std;
 #define prt(a) cout<<a<<endl
 
 const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -241,11 +241,11 @@ class disjoint_set{
        return par[X] = Find(par[X]);
     }
 
-    void Union(int x,int z)
+    bool Union(int x,int z)
     {
         int ulp_x = Find(x);
         int ulp_z = Find(z);
-        if(ulp_x == ulp_z ) return;
+        if(ulp_x == ulp_z ) return false;
         if(rank[ulp_x] > rank[ulp_z]){
             par[ulp_z] = ulp_x;
             size[ulp_x] += size[ulp_z];
@@ -259,6 +259,7 @@ class disjoint_set{
             rank[ulp_z]++;
             size[ulp_z] += size[ulp_x];
         }
+        return true;
     }
 
     int Size(int x){
@@ -281,50 +282,75 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
 
+bool query(set<ll>& B , ll n , vector<vll> & fin){
+    ll k = B.size();
 
+    cout<<"? "<<k<<" ";
+    for(auto & it : B) cout<<it<<" ";
+    cout<<endl;
+    cout.flush();
 
+    ll c;
+    cin>>c;
 
+    vll res(c);
+    for(int i = 0 ; i < c ; i++){
+        cin>>res[i];
+        B.erase( res[i] );
+    }
 
+    if( c >= n + 1 ){
+        cout<<"! ";
+        for(int i = 0 ; i <= n ; i++) cout<<res[i]<<" ";
+        cout<<endl;
+        cout.flush();
+        return true;
+    }
 
-
-
+    fin.push_back(res);
+    return false;
+}
 
 
 
 void solve(){
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    set<ll> B;
+    for(ll i = 1 ; i <= (n*n + 1) ; i++) B.insert(i);
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    vector<vll> fin;
+    for(ll i = 0 ; i < n ; i++){
+        if( query(B , n , fin) ) return;
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    ll j = *B.begin();
+    // cout<<j<<" ";
+    vll res = { j };
 
+    ll i = n-1;
+    while( i >= 0 ){
+        ll k = fin[i].size() - 1;
+        while( k >= 0 ){
+            if( fin[i][k] < j ){
+                res.pb(fin[i][k]);
+                // cout<<fin[i][k]<<" ";
+                j = fin[i][k];
+                break;
+            }
+            k--;
+        }
+        i--;
+    }
+    cout<<"! ";
+    for(int i = n ; i >= 0 ; i--) cout<<res[i]<<" "; 
+    cout<<endl;
+    return;
 }
+   
 
 int main(){
     ios_base::sync_with_stdio(0);
@@ -332,6 +358,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

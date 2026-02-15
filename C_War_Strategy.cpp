@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -155,6 +155,21 @@ vector<ll> primes( ll N ){
         if( isPrime[i] ) Primes.push_back(i); 
     }
     return Primes;
+}
+
+
+vector<vector<ll>> factors( ll N ){
+    vector<vector<ll>> fac(N+1);
+
+    for(ll i = 1 ; i <= N ; i++){
+        ll v = i;
+        while( v <= N ){
+            fac[v].push_back(i);
+            v += i;
+        }
+    }
+
+    return fac;
 }
 
 
@@ -300,30 +315,48 @@ struct Fenwick {
 };
 
 
+ll check( ll cnt , ll n , ll m , ll k ){
+
+    // cout<<cnt<<" : "<<endl;
 
 
+    ll L = k - 1;
+    ll R = n - k;
 
+    for(ll i = 0 ; i <= L ; i++){
+        ll l = i;
+        ll r = cnt - l;
+        if( r > R ) continue;
 
+        if( l + r != cnt ) continue;
 
+        if( l < r ) swap(l , r);
 
+        ll days = l - 1 + l;
+        days += r;
+        // cout<<i<<" "<<days<<endl;
+        if( days <= m ) return 1LL;
 
+        
+    }
+
+    return 0LL;
+}
 
 
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n , m , k;
+    cin>>n>>m>>k;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    ll l = 0 , h = n-1;
+    while( l <= h ){
+        ll mid = ( l + h ) / 2;
+        if( check(mid , n , m , k ) ) l = mid + 1;
+        else h = mid - 1;
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
-
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
-
+    cout<<h+1<<endl;
 }
 
 int main(){
@@ -332,6 +365,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

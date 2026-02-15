@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -155,6 +155,21 @@ vector<ll> primes( ll N ){
         if( isPrime[i] ) Primes.push_back(i); 
     }
     return Primes;
+}
+
+
+vector<vector<ll>> factors( ll N ){
+    vector<vector<ll>> fac(N+1);
+
+    for(ll i = 1 ; i <= N ; i++){
+        ll v = i;
+        while( v <= N ){
+            fac[v].push_back(i);
+            v += i;
+        }
+    }
+
+    return fac;
 }
 
 
@@ -301,29 +316,284 @@ struct Fenwick {
 
 
 
+void dfs( ll u , ll par , ll dis , vector<vll>& adj , vll & d ){
+    d[u] = dis;
+
+    for(auto it : adj[u]){
+        if( it == par ) continue;
+
+        dfs( it , u , dis+1 , adj , d );
+    }
+
+    return;
+}
+
+bool check( ll u , ll par , vector<vll>& adj , vll & d , unordered_set<ll>& st , ll mf ){
+
+    unordered_map<ll,ll> mp;
+    for(auto it : adj[u]){
+        if( it == par ) continue;
+
+        if( st.count(d[it]) ) mp[d[it]]++;
+
+        if( check(it , u , adj , d , st , mf ) ) return true;
+    }
+
+    for(auto it : mp){
+        if( it.second == mf ) return true;
+    }
+
+    return false;
+}
+
+void dfs2( ll u , ll par , vector<vll>& adj , vll & co , vll & d , vector<unordered_set<ll>> & col ){
+    
+    if( par != -1 ){
+        ll dv = d[u];
+        ll p1 = *col[dv].begin();
+        if( co[par] == p1 ){
+            yes;
+            cout<<col[dv].size()<<endl;
+            col[dv].erase(p1);
+            ll p2 = *col[dv].begin();
+            co[u] = p2;
+            col[dv].erase(p2);
+            col[dv].insert(p1);
+        }
+        else{
+            co[u] = p1;
+            col[dv].erase(p1);
+        }
+    }
+
+    cout<<u<<": "<<co[u]<<endl;
+
+    for(auto it : adj[u]){
+        if( it == par ) continue;
+        dfs2( it , u , adj , co , d , col );
+    }
+
+    return;
+}
+
+
+ll f( ll n , ll k , unordered_map<ll,ll>& mp ){
+    if( n == k ) return 0;
+    if( n < k ) return INF;
+
+    if( mp.count(n) ) return mp[n];
+
+    ll x = n/2;
+    ll y = n - x;
+
+    if( x == y ){
+        ll v = f( x , k , mp );
+        if( v != INF ) v++;
+        return mp[n] = v;
+    }
+    else{
+        ll v1 = f(x , k , mp);
+        ll v2 = f(y , k , mp);
+        if( v1 != INF ) v1++;
+        if( v2 != INF ) v2++;
+        return mp[n] = min( v1 , v2 );
+    }
+}
 
 
 
+ll NCR( ll n , ll r ){
+    if( r == 0 || r == n ) return 1;
+    if( r > (n/2) ) return NCR( n , n-r );
+
+    ll x = 1;
+    ll v = n - r + 1;
+
+    ll res = 1LL;
+
+    while( v <= n && x <= r ){
+        if( res % x == 0 ){
+            res /= x;
+            x++;
+        }
+
+        res *= v;
+        v++;
+    }
+
+    // cout<<res<<endl;
+
+    while( v <= n ){
+        res *= v;
+        v++;
+    }
+    while( x <= r ){
+        res /= x;
+        x++;
+    }
+
+    return res;
+}
 
 
+vector<pll> merge( ll l1 , ll r1 , ll l2 , ll r2 ){
+            vector<pll> tmp;
+            if( l1 < l2 ){
+                if( l2 > r1 ){
+                    tmp.push_back({l1 , r1});
+                    tmp.push_back({l2 , r2});
+                }
+                else{
+                    tmp.push_back({l1 , max(r1,r2)});
+                }
+            }
+            else{
+                if( l1 > r2 ){
+                    tmp.push_back({l2 , r2});
+                    tmp.push_back({l1 , r1});
+                }
+                else{
+                    tmp.push_back({l2 , max(r1,r2)});
+                }
+            }
 
+            return tmp;
+}
+
+// vector<pll> merge_3( pll a , pll b , pll c ){
+//     if( )
+// }
 
 
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n;
+    cin>>n;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    vll a(n);
+    for(ll i = 0 ; i < n ; i++) cin>>a[i];
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    vector<vector<pll>> rg(n);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    ll pd = abs(a[1] - a[0]);
+    ll pid = 0;
+    for(ll i = 1 ; i < n ; i++){
+        // cout<<i<<endl;
+        ll d = abs(a[i] - a[i-1]);
+        if( pd != d ){
+            // yes;
+            rg[pd].push_back({ pid , i-1 });
+            pid = i-1;
+        }
+        pd = d;
+    }
 
+    rg[pd].push_back({pid , n-1});
+
+    // for(ll k = 0 ; k < n ; k++){
+    //     cout<<k<<endl;
+    //     for(auto it : rg[k]){
+    //         cout<<it.first<<" "<<it.second<<endl;
+    //     }
+    // }
+
+    
+
+    vector<pll> cur;
+    vll res(n , 0);
+
+    ll k = n-1;
+    while( k > 0 ){
+
+        if( rg[k].empty() ){
+            if( k < n-1 ) res[k] = res[k+1];
+            k--;
+            continue;
+        }
+
+        ll s1 = rg[k].size();
+        ll s2 = cur.size();
+
+        ll i = 0 , j = 0;
+        vector<pll> tmp;
+        // ll l = -1 , r = -1;
+        while( i < s1 && j < s2 ){
+            ll l1 = rg[k][i].first , r1 = rg[k][i].second;
+            ll l2 = cur[j].first , r2 = cur[j].second;
+
+            if( tmp.empty() ){
+                vector<pll> mg = merge(l1 , r1 , l2 , r2);
+                for(auto it : mg) tmp.push_back(it);
+            }
+            else{
+                pll p = tmp.back();
+
+                if( l1 < l2 ){
+                    vector<pll> mg = merge( p.first , p.second , l1 , r1 );
+                    if( mg.size() == 1 ){
+
+                    }
+                    else{
+                        
+                    }
+                }
+                else{
+                    vector<pll> mg = merge( p.first , p.second , l2 , r2 );
+                }
+            }
+        }
+
+        while( i < s1 ) tmp.push_back(rg[k][i++]);
+        while( j < s2 ) tmp.push_back(cur[j++]);
+
+        // if( cur.empty() ){
+        //     k--;
+        //     continue;
+        // }
+
+        // sort(cur.begin() , cur.end());
+
+        ll cnt = 0;
+        // vector<pll> ncur;
+        // ll l = cur[0].first , r = cur[0].second;
+
+        // cout<<k<<endl;
+        cout<<k<<" , "<<endl;
+        for(auto it : tmp){
+            ll L = it.first;
+            ll R = it.second;
+            cout<<L<<" "<<R<<endl;
+            // cout<<L<<" "<<R<<endl;
+
+            ll el = R - L + 1;
+            cnt += (el * (el-1)) / 2;
+
+            // if( L > r ){
+            //     ncur.push_back({ l , r });
+
+            //     ll el = r - l + 1;
+            //     cnt += (el * (el-1)) / 2;
+
+            //     l = L;
+            //     r = R;
+                
+            // }
+
+            // r = max( r , R );
+        }
+
+        // ll el = r - l + 1;
+        // cnt += ( el * (el-1) ) / 2;
+        // ncur.push_back({ l , r });
+
+        res[k] = cnt;
+        cur = tmp;
+        k--;
+    }
+    
+
+    for(ll k = 1 ; k < n ; k++) cout<<res[k]<<" ";
+    cout<<endl;
 }
 
 int main(){
@@ -332,6 +602,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -155,6 +155,21 @@ vector<ll> primes( ll N ){
         if( isPrime[i] ) Primes.push_back(i); 
     }
     return Primes;
+}
+
+
+vector<vector<ll>> factors( ll N ){
+    vector<vector<ll>> fac(N+1);
+
+    for(ll i = 1 ; i <= N ; i++){
+        ll v = i;
+        while( v <= N ){
+            fac[v].push_back(i);
+            v += i;
+        }
+    }
+
+    return fac;
 }
 
 
@@ -303,27 +318,46 @@ struct Fenwick {
 
 
 
-
-
-
-
-
-
 void solve(){
+    ll x,y;
+    cin>>x>>y;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll p = x , q = y;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    for(ll b = 30 ; b >= 0 ; b--){
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+        ll bp = ( p >> b ) & 1LL;
+        ll bq = ( q >> b ) & 1LL;
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+        if( !(bp & bq) ) continue;
 
+
+        ll cand_p = (1LL << b) ^ p;
+        ll cand_q = (1LL << b) ^ q;
+
+        // cout<<b<<" : ";
+        // cout<<cand_p<<" "<<cand_q<<endl;
+
+        for(ll i = b-1 ; i >= 0 ; i--){
+            ll bcp = ( cand_p >> i ) & 1LL;
+            ll bcq = ( cand_q >> i ) & 1LL;
+
+            if( !bcp ) cand_q = ( 1LL << i ) | cand_q;
+            if( !bcq ) cand_p = ( 1LL << i ) | cand_p;
+
+            // cout<<i<<" : ";
+            // cout<<cand_p<<" "<<cand_q<<endl;
+        }
+
+        // cout<<b<<" : ";
+        // cout<<cand_p<<" "<<cand_q<<endl;
+
+        if( abs(cand_p - p) <= abs(cand_q - q) ) p = cand_p;
+        else q = cand_q;
+
+    }
+
+    cout<<p<<" "<<q<<endl;
 }
 
 int main(){
@@ -332,6 +366,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

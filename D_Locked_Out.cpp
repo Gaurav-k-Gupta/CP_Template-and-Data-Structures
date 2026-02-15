@@ -1,19 +1,34 @@
-/*
-Author :- Gaurav Kumar
-Date - 30/03/2025
-*/
-
 #include<bits/stdc++.h>
-// #include <ext/pb_ds/assoc_container.hpp>
-// #include <ext/pb_ds/tree_policy.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
 using namespace std;
-// using namespace __gnu_pbds;
+using namespace __gnu_pbds;
 
 
 
-// template<class T> using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+template<class T> using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
 
-// template<class T> using ordered_multiset = tree<T, null_type, less_equal<T>, rb_tree_tag, tree_order_statistics_node_update>;
+template<class T> using ordered_multiset = tree<T, null_type, less_equal<T>, rb_tree_tag, tree_order_statistics_node_update>;
+
+void using_pbds(){
+    ordered_set<int> X;
+    X.insert(1);
+    X.insert(2);
+    X.insert(4);
+    X.insert(8);
+    X.insert(16);
+
+    cout<<*X.find_by_order(1)<<endl; // 2
+    cout<<*X.find_by_order(2)<<endl; // 4
+    cout<<*X.find_by_order(4)<<endl; // 16
+    cout<<(X.end()==X.find_by_order(6))<<endl; // true
+
+    cout<<X.order_of_key(-5)<<endl;  // 0
+    cout<<X.order_of_key(1)<<endl;   // 0
+    cout<<X.order_of_key(3)<<endl;   // 2
+    cout<<X.order_of_key(4)<<endl;   // 2
+    cout<<X.order_of_key(400)<<endl; // 5
+}
 
 
 #define ll long long
@@ -30,12 +45,12 @@ using namespace std;
 #define all(a) (a).begin() , (a).end()
 #define prt(a) cout<<a<<endl
 
-const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll mod = 998244353;
+const ll INF = 1e12;
 
 
 
-// Right now, this segment tree is for quering max element in a range, point update ( replace ) , range update ( addend ) , do some little changes according to the queries or updates you want and then use it.
+// Right now, this segment tree is for quering min element in a range, point update ( replace ) , range update ( addend ) , do some little changes according to the queries or updates you want and then use it.
 class seg_tree{
     private:
 
@@ -45,10 +60,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +113,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -241,11 +256,11 @@ class disjoint_set{
        return par[X] = Find(par[X]);
     }
 
-    void Union(int x,int z)
+    bool Union(int x,int z)
     {
         int ulp_x = Find(x);
         int ulp_z = Find(z);
-        if(ulp_x == ulp_z ) return;
+        if(ulp_x == ulp_z ) return false;
         if(rank[ulp_x] > rank[ulp_z]){
             par[ulp_z] = ulp_x;
             size[ulp_x] += size[ulp_z];
@@ -259,6 +274,7 @@ class disjoint_set{
             rank[ulp_z]++;
             size[ulp_z] += size[ulp_x];
         }
+        return true;
     }
 
     int Size(int x){
@@ -266,6 +282,7 @@ class disjoint_set{
         return this->size[ulp_x];
     }
 };
+
 
 vll pi_func( string & s ){
     ll n = s.size();
@@ -280,6 +297,7 @@ vll pi_func( string & s ){
     }
     return pii;
 }
+
 
 struct Fenwick {
   int N;
@@ -300,39 +318,175 @@ struct Fenwick {
 };
 
 
-
-
-
-
-
-
-
-
-
-void solve(){
-
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
-
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
-
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
-
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
-
+int log2_floor(unsigned long long i) {
+    return i ? __builtin_clzll(1) - __builtin_clzll(i) : -1;
 }
+
+
+struct sparse_table{
+    ll K = 25;
+    vector<long long> st[26];
+
+    ll f( ll a , ll b ){
+        return a+b;
+    }
+
+    sparse_table(vector<long long> a){
+        int N = a.size();
+        for(int i = 0 ; i <= K ; i++){
+            st[i].resize(N);
+        }
+        st[0] = a;
+
+        for (int i = 1; i <= K; i++){
+            for (int j = 0; j + (1 << i) <= N; j++){
+                st[i][j] = f(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+            }
+        }
+    }
+
+    ll query1(ll L , ll R){
+        long long sum = 0;
+        for (int i = K ; i >= 0 ; i--) {
+            if ((1 << i) <= R - L + 1) {
+                sum += st[i][L];
+                L += 1 << i;
+            }
+        }
+        return sum;
+    }
+
+
+    ll query2(ll L , ll R){
+        int i = log2_floor( R - L + 1 );
+        int minimum = min(st[i][L], st[i][R - (1 << i) + 1]);
+        return minimum;
+    }
+
+};
+
+
+long long compute_hash(string & s) {
+    ll p = 31;
+    ll m = 1e9 + 9;
+    ll hash_value = 0;
+    ll p_pow = 1;
+    for(char c : s) {
+        hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
+        p_pow = (p_pow * p) % m;
+    }
+    return hash_value;
+}
+
+
+vector<int> rabin_karp(string const& s, string const& t) {
+    const int p = 31; 
+    const int m = 1e9 + 9;
+    int S = s.size(), T = t.size();
+
+    vector<long long> p_pow(max(S, T)); 
+    p_pow[0] = 1; 
+    for (int i = 1; i < (int)p_pow.size(); i++) 
+        p_pow[i] = (p_pow[i-1] * p) % m;
+
+    vector<long long> h(T + 1, 0); 
+    for (int i = 0; i < T; i++)
+        h[i+1] = (h[i] + (t[i] - 'a' + 1) * p_pow[i]) % m; 
+    long long h_s = 0; 
+    for (int i = 0; i < S; i++) 
+        h_s = (h_s + (s[i] - 'a' + 1) * p_pow[i]) % m; 
+
+    vector<int> occurrences;
+    for (int i = 0; i + S - 1 < T; i++) {
+        long long cur_h = (h[i+S] + m - h[i]) % m;
+        if (cur_h == h_s * p_pow[i] % m)
+            occurrences.push_back(i);
+    }
+    return occurrences;
+}
+
+vector<int> manacher_odd(string s) {
+    int n = s.size();
+    s = "$" + s + "^";
+    vector<int> p(n + 2);
+    int l = 0, r = 1;
+    for(int i = 1; i <= n; i++) {
+        p[i] = min(r - i, p[l + (r - i)]);
+        while(s[i - p[i]] == s[i + p[i]]) {
+            p[i]++;
+        }
+        if(i + p[i] > r) {
+            l = i - p[i], r = i + p[i];
+        }
+    }
+    return vector<int>(begin(p) + 1, end(p) - 1);
+}
+
+vector<int> manacher(string s) {
+    string t;
+    for(auto c: s) {
+        t += string("#") + c;
+    }
+    auto res = manacher_odd(t + "#");
+    return vector<int>(begin(res) + 1, end(res) - 1);
+}
+
+void sos_dp(){
+    ll n = 20;
+    ll max_mask = 1 << n;
+    vll dp( max_mask + 1 , 0 );
+
+    for(ll b = 0 ; b < n ; b++){
+        for(ll mask = 0 ; mask < max_mask ; mask++){
+            if( mask & (1 << b) ){
+                dp[mask ^ (1 << b)] += dp[mask];
+            }
+        }    
+    }
+}
+
+unsigned long long xor0toN(unsigned long long n) {
+    switch (n & 3ULL) {
+        case 0: return n;
+        case 1: return 1ULL;
+        case 2: return n + 1ULL;
+        default: return 0ULL; // case 3
+    }
+}
+
+// XOR of range [L, R]
+unsigned long long rangeXor(unsigned long long L, unsigned long long R) {
+    if (L == 0ULL) return xor0toN(R);
+    return xor0toN(R) ^ xor0toN(L - 1ULL);
+}
+
+// OR of range [L, R]
+unsigned long long rangeOr(unsigned long long L, unsigned long long R) {
+    if (L > R) swap(L, R);            // handle inverted inputs gracefully
+    if (L == R) return L;
+
+    unsigned int shift = 0;
+    unsigned long long l = L, r = R;
+    // shift until prefixes match
+    while (l < r) {
+        l >>= 1;
+        r >>= 1;
+        ++shift;
+    }
+
+    unsigned long long prefix = r;
+    const unsigned int BITS = sizeof(unsigned long long) * 8;
+
+    // if shift covers all bits, result is all 1s
+    if (shift >= BITS) return ~0ULL;
+
+    unsigned long long mask = (shift == 0) ? 0ULL : ((1ULL << shift) - 1ULL);
+    return (prefix << shift) | mask;
+}
+
+
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
-
-    int t;
-    cin>>t;
-    while( t-- ){
-        solve();
-    }
 }

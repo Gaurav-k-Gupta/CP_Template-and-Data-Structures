@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -155,6 +155,21 @@ vector<ll> primes( ll N ){
         if( isPrime[i] ) Primes.push_back(i); 
     }
     return Primes;
+}
+
+
+vector<vector<ll>> factors( ll N ){
+    vector<vector<ll>> fac(N+1);
+
+    for(ll i = 1 ; i <= N ; i++){
+        ll v = i;
+        while( v <= N ){
+            fac[v].push_back(i);
+            v += i;
+        }
+    }
+
+    return fac;
 }
 
 
@@ -301,29 +316,73 @@ struct Fenwick {
 
 
 
+void dfs( ll u , ll par , ll dis , vector<vll>& adj , vll & d ){
+    d[u] = dis;
 
+    for(auto it : adj[u]){
+        if( it == par ) continue;
 
+        dfs( it , u , dis+1 , adj , d );
+    }
 
+    return;
+}
 
+bool check( ll u , ll par , vector<vll>& adj , vll & d , unordered_set<ll>& st , ll mf ){
 
+    unordered_map<ll,ll> mp;
+    for(auto it : adj[u]){
+        if( it == par ) continue;
 
+        if( st.count(d[it]) ) mp[d[it]]++;
 
+        if( check(it , u , adj , d , st , mf ) ) return true;
+    }
+
+    for(auto it : mp){
+        if( it.second == mf ) return true;
+    }
+
+    return false;
+}
 
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n;
+    cin>>n;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    vector<vll> adj( n );
+    for(ll i = 0 ; i < n-1 ; i++){
+        ll u , v;
+        cin>>u>>v;
+        u--; v--;
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+        adj[u].pb(v);
+        adj[v].pb(u);
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    vll d( n , INF );
+    d[0] = 0;
 
+    dfs( 0 , -1 , 0 , adj , d );
+
+    vll freq( n+1 , 0 );
+    for(auto it : d){
+        freq[it]++;
+    }
+
+    ll mf = *max_element( freq.begin() , freq.end() );
+
+    unordered_set<ll> st;
+    for(ll i = 0 ; i <= n ; i++){
+        if( freq[i] == mf ) st.insert( i ); 
+    }
+
+    ll res = mf;
+
+    if( check(0 , -1 , adj , d , st , mf ) ) res++;
+
+    cout<<res<<endl;
 }
 
 int main(){
@@ -332,6 +391,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

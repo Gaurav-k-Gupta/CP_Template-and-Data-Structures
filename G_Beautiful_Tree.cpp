@@ -30,8 +30,8 @@ using namespace std;
 #define all(a) (a).begin() , (a).end()
 #define prt(a) cout<<a<<endl
 
-const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll mod = 998244353;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -241,11 +241,11 @@ class disjoint_set{
        return par[X] = Find(par[X]);
     }
 
-    void Union(int x,int z)
+    bool Union(int x,int z)
     {
         int ulp_x = Find(x);
         int ulp_z = Find(z);
-        if(ulp_x == ulp_z ) return;
+        if(ulp_x == ulp_z ) return false;
         if(rank[ulp_x] > rank[ulp_z]){
             par[ulp_z] = ulp_x;
             size[ulp_x] += size[ulp_z];
@@ -259,6 +259,7 @@ class disjoint_set{
             rank[ulp_z]++;
             size[ulp_z] += size[ulp_x];
         }
+        return true;
     }
 
     int Size(int x){
@@ -281,50 +282,80 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
-
-
-
-
-
-
-
-
 
 
 
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n;
+    cin>>n;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    if( n == 2 ){
+        cout<<-1<<endl;
+        return;
+    }
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    if( n == 4 ){
+        cout<<"1 2"<<endl;
+        cout<<"1 3"<<endl;
+        cout<<"1 4"<<endl;
+        return;
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    if( n == 6 ){
+        cout<<"1 2"<<endl;
+        cout<<"1 3"<<endl;
+        cout<<"1 4"<<endl;
+        cout<<"1 6"<<endl;
+        cout<<"2 5"<<endl;
 
+        return;
+    }
+
+    ll n1 = ( n + 1 ) / 2 - 1;
+    ll s1 = n1 * ( 6 + (n1-1)*2 ) / 2;
+
+    ll n2 = ( n / 2 ) - 1;
+    ll s2 = n2 * ( 8 + (n2-1)*2 );
+
+    // cout<<s1<<" "<<s2<<endl;
+    // return;
+
+    ll s = s1 + s2;
+
+    ll v = sqrt(s) + 1;
+    if( (s & 1) != (v & 1) ) v++;
+    
+
+    for(ll i = 3 ; i <= n ; i += 2){
+        cout<<1<<" "<<i<<endl;
+    }
+
+    for(ll i = 4 ; i <= n ; i += 2){
+        cout<<2<<" "<<i<<endl;
+    }
+
+    while(v <= 2*n){
+        ll rem = v*v  - s;
+        ll r1 = -1 , r2 = -1;
+        for(ll i = 1 ; i <= n ; i += 2){
+            if( rem % i == 0 && (rem/i) <= n ){
+                r1 = i;
+                r2 = rem/i;
+            }
+        }
+
+        if( r1 != -1 ){
+            cout<<r1<<" "<<r2<<endl;
+            break;
+        }
+        
+        v += 2;
+    }
+    
 }
+
+   
 
 int main(){
     ios_base::sync_with_stdio(0);
@@ -332,6 +363,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

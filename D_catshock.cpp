@@ -30,8 +30,8 @@ using namespace std;
 #define all(a) (a).begin() , (a).end()
 #define prt(a) cout<<a<<endl
 
-const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll mod = 998244353;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -157,6 +157,35 @@ vector<ll> primes( ll N ){
     return Primes;
 }
 
+vector<vll> prime_factorization( ll N ){
+    vll p = primes( N );
+
+    vector<vll> res( N+1 );
+
+
+    for(int pj : p){
+        ll v = pj;
+        while( v <= N ){
+            res[v].pb( pj );
+            v += pj;
+        }
+    }
+
+    return res;
+}
+
+
+vector<vll> factors( ll N ){
+    vector<vll> facs( N+1 );
+
+    for(ll i = 2 ; i <= N ; i++){
+        for(ll j = i ; j <= N ; j += i){
+            facs[j].pb( i );
+        }
+    }
+
+    return facs;
+}
 
 
 
@@ -196,7 +225,7 @@ ll gcd(ll a, ll b, ll& x, ll& y) {
 
 ll lcm( ll a , ll b ){
     ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+    return (a*b) / __gcd( a , b );
 }
 
 
@@ -241,11 +270,11 @@ class disjoint_set{
        return par[X] = Find(par[X]);
     }
 
-    void Union(int x,int z)
+    bool Union(int x,int z)
     {
         int ulp_x = Find(x);
         int ulp_z = Find(z);
-        if(ulp_x == ulp_z ) return;
+        if(ulp_x == ulp_z ) return false;
         if(rank[ulp_x] > rank[ulp_z]){
             par[ulp_z] = ulp_x;
             size[ulp_x] += size[ulp_z];
@@ -259,6 +288,7 @@ class disjoint_set{
             rank[ulp_z]++;
             size[ulp_z] += size[ulp_x];
         }
+        return true;
     }
 
     int Size(int x){
@@ -281,57 +311,161 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
+
+
+void dfs1( ll u , ll par , vector<vll>& adj , vll & oe){
+    ll f = 1 - oe[u];
+
+    for(auto & it : adj[u]){
+        if( it == par ) continue;
+
+        oe[it] = f;
+        dfs1( it , u , adj , oe );
+    }
+
+    return;
+}
 
 
 
+bool dfs2( ll u , ll par , vector<vll>& adj , vll & path ){    
+    bool f = false;
+    if( u == adj.size() - 1 ) f = true;
+
+    for(auto & it : adj[u]){
+        if( it == par ) continue;
+
+        f = f | dfs2( it , u , adj , path );
+    }
 
 
+    if( f ) path.pb( u );
+
+    return f;
+}
 
 
+void dfs3( ll v1 , ll par , ll v2 , vector<vll>& adj , vll & oe , vector<vll>& res , ll & tot_cnt ){
 
+    for(auto & it : adj[v1]){
+        if( it == par || it == v2 ) continue;
+
+        dfs3( it , v1 , v2 , adj , oe , res , tot_cnt );
+
+    }
+
+    if( (tot_cnt & 1) == oe[v1] ){
+        res.pb({1});
+        tot_cnt++;
+    }
+
+    res.pb({2 , v1+1});
+    res.pb({1});
+    tot_cnt++;
+
+
+    return;
+}
+
+void dfs4( ll v1 , ll par , ll v2 , vector<vll>& adj , vll & oe , vector<vll>& res , ll & tot_cnt ){
+
+    for(auto & it : adj[v1]){
+        if( it == par || it == v2 ) continue;
+
+        dfs3( it , v1 , v2 , adj , oe , res , tot_cnt );
+
+    }
+
+    if( v1 == adj.size() - 1 ) return;
+
+    if( (tot_cnt & 1) == oe[v1] ){
+        res.pb({1});
+        tot_cnt++;
+    }
+
+    res.pb({2 , v1+1});
+    res.pb({1});
+    tot_cnt++;
+
+
+    return;
+}
 
 
 
 void solve(){
+    ll n;
+    cin>>n;
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    vector<vll> adj( n );
+    for(ll i = 0 ; i < n-1 ; i++){
+        ll u , v;
+        cin>>u>>v;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+        u--; v--;
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+        adj[u].pb(v);
+        adj[v].pb(u);
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
 
-}
+
+    vll oe( n );
+    oe[0] = 0;
+
+    dfs1(0 , -1 , adj , oe);
+
+
+
+    vll path;
+    dfs2(0 , -1 , adj , path);
+
+    reverse( path.begin() , path.end() );
+
+
+    vector<vll> res;
+    ll tot_cnt = 0;
+
+
+    int si = path.size();
+
+    
+    for(int i = 0 ; i < si-1 ; i++){
+        ll v1 = path[i];
+        ll v2 = ( i < si - 1 ) ? path[i+1] : -1;
+        ll par = ( i ) ? path[i-1] : -1;
+
+        dfs3( v1 , par , v2 , adj , oe , res , tot_cnt );
+    }
+
+
+    dfs4( n-1 , path[si-2] , -1 , adj , oe , res , tot_cnt );
+
+
+
+    cout<<res.size()<<endl;
+
+    for(auto & q : res){
+        for(auto & it : q){
+            cout<<it<<" ";
+        }
+        cout<<endl;
+    }
+
+    cout<<endl;
+}   
+
+   
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
+
+
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

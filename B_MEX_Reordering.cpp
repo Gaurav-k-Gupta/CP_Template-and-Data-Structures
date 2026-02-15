@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -155,6 +155,21 @@ vector<ll> primes( ll N ){
         if( isPrime[i] ) Primes.push_back(i); 
     }
     return Primes;
+}
+
+
+vector<vector<ll>> factors( ll N ){
+    vector<vector<ll>> fac(N+1);
+
+    for(ll i = 1 ; i <= N ; i++){
+        ll v = i;
+        while( v <= N ){
+            fac[v].push_back(i);
+            v += i;
+        }
+    }
+
+    return fac;
 }
 
 
@@ -303,26 +318,33 @@ struct Fenwick {
 
 
 
-
-
-
-
-
-
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n;
+    cin>>n;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    vll a(n);
+    for(ll i = 0; i < n ; i++) cin>>a[i];
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    unordered_map<ll,ll> mp;
+    for(ll i = 0; i < n ; i++){
+        mp[a[i]]++;
+    }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+
+    if( !mp[0] ){
+        no;
+    }
+    else if( mp[0] == 1 ){
+        yes;
+    }
+    else if( mp[1] ){
+        yes;
+    }
+    else{
+        no;
+    }
+
 
 }
 
@@ -332,6 +354,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

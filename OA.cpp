@@ -301,11 +301,82 @@ struct Fenwick {
 
 
 
+int calculateMaxDistance(string expertise, string workspace) {
+    int k = (int)expertise.size();
+    int n = (int)workspace.size();
+    vector<int> pref(k), suff(k);
+    int j = 0;
+    for (int i = 0; i < n && j < k; ++i) {
+        if (workspace[i] == expertise[j]) {
+            pref[j] = i;
+            ++j;
+        }
+    }
+    j = k - 1;
+    for (int i = n - 1; i >= 0 && j >= 0; --i) {
+        if (workspace[i] == expertise[j]) {
+            suff[j] = i;
+            --j;
+        }
+    }
+    int ans = 0;
+    for (int i = 0; i + 1 < k; ++i) {
+        int gap = suff[i+1] - pref[i] - 1;
+        if (gap > ans) ans = gap;
+    }
+    return ans;
+}
+
+
+int findMaximumPerformance( vector<int> expense , vector<int> performance , int spending_cap ) {
+    int n = expense.size();
+
+    vector<pair<int,int>> exp(n);
+    
+    for(int i = 0 ; i < n ; i++){
+        exp[i] = { expense[i] , i };
+    }
+
+
+    sort(exp.begin() , exp.end());
+    sort(expense.begin() , expense.end());
+
+
+    vector<int> pref( n );
+    pref[0] = performance[ exp[0].second ];
+    for(int i = 1 ; i < n ; i++){
+        pref[i] = max( pref[i-1] , performance[exp[i].second] ); 
+    }
 
 
 
+    int max_per = 0;
+
+    for(int i = 0 ; i < n ; i++){
+        int per = performance[ exp[i].second ];
+        int rem_exp = spending_cap - exp[i].first;
+
+        if( rem_exp < 0 ) continue;
+
+        max_per = max( max_per , per );
 
 
+        
+
+        int idx = upper_bound( expense.begin() , expense.begin() + i , rem_exp ) - expense.begin();
+
+        if( idx == 0 ) continue;
+
+        idx--;
+
+        per += pref[ idx ];
+
+        max_per = max( max_per , per );
+    }
+
+
+    return max_per;
+}
 
 
 
@@ -330,9 +401,19 @@ int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
-    int t;
-    cin>>t;
-    while( t-- ){
-        solve();
-    }
+    // Test Case 1
+    vector<int> expense1 = {4, 6, 5, 7, 1, 6};
+    vector<int> performance1 = {3, 6, 2, 6, 9, 5};
+    int spending_cap1 = 7;
+    int result1 = findMaximumPerformance(expense1, performance1, spending_cap1);
+    cout << "Example 1 Max Performance: " << result1 << endl; // Expected: 15
+
+    // Test Case 2
+    vector<int> expense2 = {1, 2, 3, 5, 4};
+    vector<int> performance2 = {1, 2, 3, 4, 6};
+    int spending_cap2 = 8;
+    int result2 = findMaximumPerformance(expense2, performance2, spending_cap2);
+    cout << "Example 2 Max Performance: " << result2 << endl; // Expected based on my analysis: 9
+
+    return 0;
 }

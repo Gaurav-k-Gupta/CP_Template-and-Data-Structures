@@ -30,8 +30,8 @@ using namespace std;
 #define all(a) (a).begin() , (a).end()
 #define prt(a) cout<<a<<endl
 
-const ll mod = 1e9 + 7;
-const ll INF = 1e9;
+const ll mod = 998244353;
+const ll INF = 1e12;
 
 
 
@@ -45,10 +45,10 @@ class seg_tree{
 
 
     ll combine( ll a , ll b ){
-        return max(a,b);
+        return min(a,b);
     }
 
-    void buildHelper( int v , int tl , int tr , vi & a){
+    void buildHelper( int v , int tl , int tr , vll & a){
         if (tl == tr) {
             t[v] = a[tl];
         }
@@ -98,16 +98,16 @@ class seg_tree{
     }
 
     ll rangeQueryHelper( int v , int tl , int tr , int l , int r ){
-        if( l > r ) return -INF;
+        if( l > r ) return INF;
         if( l == tl && r == tr ) return t[v];
-        push(v);
+        // push(v);
         int tm = ( tl + tr )/2;
-        return max(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
+        return combine(rangeQueryHelper( v*2 , tl , tm , l , min( tm , r ) ) , rangeQueryHelper( v*2 + 1 , tm+1 , tr , max( tm+1 , l ) , r));
     }
 
     public:
 
-    seg_tree( vi &a ){
+    seg_tree( vll &a ){
         this->n = a.size();
         t.resize( 4*n + 1 );
         lazy.resize( 4*n+1 , 0 );
@@ -157,6 +157,35 @@ vector<ll> primes( ll N ){
     return Primes;
 }
 
+vector<vll> prime_factorization( ll N ){
+    vll p = primes( N );
+
+    vector<vll> res( N+1 );
+
+
+    for(int pj : p){
+        ll v = pj;
+        while( v <= N ){
+            res[v].pb( pj );
+            v += pj;
+        }
+    }
+
+    return res;
+}
+
+
+vector<vll> factors( ll N ){
+    vector<vll> facs( N+1 );
+
+    for(ll i = 2 ; i <= N ; i++){
+        for(ll j = i ; j <= N ; j += i){
+            facs[j].pb( i );
+        }
+    }
+
+    return facs;
+}
 
 
 
@@ -196,7 +225,7 @@ ll gcd(ll a, ll b, ll& x, ll& y) {
 
 ll lcm( ll a , ll b ){
     ll x = 0 , y = 0;
-    return a*b / gcd( a , b , x , y );
+    return (a*b) / __gcd( a , b );
 }
 
 
@@ -241,11 +270,11 @@ class disjoint_set{
        return par[X] = Find(par[X]);
     }
 
-    void Union(int x,int z)
+    bool Union(int x,int z)
     {
         int ulp_x = Find(x);
         int ulp_z = Find(z);
-        if(ulp_x == ulp_z ) return;
+        if(ulp_x == ulp_z ) return false;
         if(rank[ulp_x] > rank[ulp_z]){
             par[ulp_z] = ulp_x;
             size[ulp_x] += size[ulp_z];
@@ -259,6 +288,7 @@ class disjoint_set{
             rank[ulp_z]++;
             size[ulp_z] += size[ulp_x];
         }
+        return true;
     }
 
     int Size(int x){
@@ -281,57 +311,90 @@ vll pi_func( string & s ){
     return pii;
 }
 
-struct Fenwick {
-  int N;
-  vector<long long> f;
-  Fenwick(int n):N(n),f(n+1,0){}
-  // add v at index i
-  void add(int i, long long v){
-    for(++i; i<=N; i+=i&-i)
-      f[i] += v;
-  }
-  // prefix sum [0..i]
-  long long sum(int i){
-    long long s = 0;
-    for(++i; i>0; i-=i&-i)
-      s += f[i];
-    return s;
-  }
-};
+
+ll query(ll i , ll x){
+    cout<<"? "<<i<<" "<<x<<endl;
+
+    ll res;
+    cin>>res;
+
+    return res;
+}
 
 
-
-
-
-
-
-
-
-
+ll kb( ll n , ll k ){
+    return (n & ( 1LL << k )) ? 1 : 0;
+}
 
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n;
+    cin>>n;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    ll ans = 0;
+    set<ll> que;
+    
+    for(ll i = 1 ; i < n ; i++) que.insert(i);
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+    set<ll> can = que;
+    can.insert(n);
 
+    ll qx = 1;
+    ll k = 0;
+
+    while( can.size() > 1 ){
+
+        ll s1 = 0;
+        set<ll> one , zero;
+        for(auto it : que){
+            ll res = query( it , qx );
+            s1 += res;
+            if( res ) one.insert( it );
+            else zero.insert( it );
+        }
+
+        ll s2 = 0;
+        for(auto it : can){
+            s2 += kb(it , k);
+        }
+
+        ll reqB = 1;
+
+        if( s1 == s2 ) reqB = 0;
+
+        if( reqB ) ans += qx;
+
+        set<ll> st2;
+        for(auto it : can){
+            if( kb(it , k) == reqB ) st2.insert(it);
+        }
+
+        if( reqB ) que = one;
+        else que = zero;
+        can = st2;
+
+
+        k++;
+        qx *= 2;
+    }
+
+
+    cout<<"! "<<*can.begin()<<endl;
 }
+   
 
 int main(){
     ios_base::sync_with_stdio(0);
     cin.tie(0); cout.tie(0);
 
+
+    
+
+
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }

@@ -19,8 +19,8 @@ using namespace std;
 #define ll long long
 #define pi pair<int,int>
 #define pll pair<ll,ll>
-#define ppi pair<pair<int,int>>
-#define ppll pair<pair<ll,ll>>
+#define ppi pair<int,pair<int,int>>
+#define ppll pair<ll,pair<ll,ll>>
 #define vi vector<int>
 #define vll vector<ll>
 #define pb push_back
@@ -155,6 +155,21 @@ vector<ll> primes( ll N ){
         if( isPrime[i] ) Primes.push_back(i); 
     }
     return Primes;
+}
+
+
+vector<vector<ll>> factors( ll N ){
+    vector<vector<ll>> fac(N+1);
+
+    for(ll i = 1 ; i <= N ; i++){
+        ll v = i;
+        while( v <= N ){
+            fac[v].push_back(i);
+            v += i;
+        }
+    }
+
+    return fac;
 }
 
 
@@ -303,27 +318,73 @@ struct Fenwick {
 
 
 
-
-
-
-
-
-
 void solve(){
 
-    // segment tree testing
-    vi a = { 2 , 4 , 5 , 1 , 10 , -5 , -2 , 3};
-    seg_tree t(a);
+    ll n;
+    cin>>n;
 
-    cout<<t.rangeQuery(5 , 6)<<endl;
-    cout<<t.rangeQuery(0 , 7)<<endl;
+    string s;
+    cin>>s;
 
-    t.rangeUpdate(4 , 7 , 5);
-    t.pointUpdate(0 , 45);
+    vector<pll> dp(n);
+    ll perf = 0 , clos = 0;
+    for(ll i = n-1 ; i >= 0 ; i--){
+        if( s[i] == '(' ){
+            clos--;
+            perf++;
+        }
+        else{
+            clos++;
+        }
 
-    cout<<t.rangeQuery(6 , 7)<<endl;
-    cout<<t.rangeQuery(1 , 6)<<endl;
+        dp[i] = {perf , clos};
+    }
 
+
+    vll idx(n);
+    idx[n-1] = n;
+
+    for(ll i = n-2 ; i >= 0 ; i--){
+        if( s[i+1] == '(' ) idx[i] = i+1;
+        else{
+            idx[i] = idx[i+1];
+        }
+    }
+
+
+    ll maxi = 0;
+    ll del = 0;
+    for(ll i = 0; i < n ; i++){
+        if( s[i] == ')' ){
+            ll j = idx[i];
+            if( j == n ) break;
+
+            ll cd = del + 1;
+            pll r = dp[j+1];
+            ll clos = r.second;
+            ll cnt = r.first;
+
+
+
+            if( clos >= cd ){
+                ll ans = cnt*2 + (i+1) + cd;
+                maxi = max( maxi , ans );
+            }
+            else if( (clos + cnt) >= cd ){
+                ll ans = i+1 + cd + ( clos + cnt - cd ) * 2;
+                maxi = max( maxi , ans );
+            }
+
+            del--;
+        }
+        else{
+            del++;
+        }
+    }
+
+    if( maxi == 0 ) cout<<-1<<endl;
+    else cout<<maxi<<endl;
+    
 }
 
 int main(){
@@ -332,6 +393,7 @@ int main(){
 
     int t;
     cin>>t;
+    // t = 1;
     while( t-- ){
         solve();
     }
